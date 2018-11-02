@@ -51,7 +51,7 @@ def computeQE(input_file_name, q_fileName, e_fileName):
         for line in f:
             splitted_line = line.split()
             for pair in splitted_line:
-                words[count] = getWordFromPair(pair, '/')
+                words[count] = pair.split('/')[-1]
                 numOfWords2 += 1
                 count += 1
                 #got 3 words
@@ -101,9 +101,38 @@ def computeQE(input_file_name, q_fileName, e_fileName):
         temp = key.split(", ")
         ab = temp[0] + ', ' + temp[1]
         bc = temp[1] + ', ' + temp[2]
-        newKey = temp[2]+'|' + temp[0] + ', ' + temp[1]
+        newKey = temp[2]+',' + temp[0] + ', ' + temp[1]
         q_val_dict[newKey] = lambda1*(count_abc_dict[key]/count_ab_dict[ab]) + \
                              lambda2*(count_bc_dict[bc]/count_b_dict[temp[1]]) + lambda3*(count_c_dict[temp[2]]/numOfWords2)
+
+    #write to the files:
+    e_file_object = open(e_fileName, 'w')
+    for key in e_dict:
+        temp = key.split('/')
+        word = getWordFromPair(key, '/')
+        classification = temp[-1]
+        s = word + ' ' + classification + '\t' + str(e_dict[key])
+        e_file_object.write(s+'\n')
+    #write q values:
+    q_file_object = open(q_fileName, 'w')
+    for key in count_abc_dict:
+        temp = key.split(', ')
+        s = temp[0] + ' ' + temp[1] + ' ' + temp[2] + '\t' + str(count_abc_dict[key])
+        q_file_object.write(s+'\n')
+    for key in count_ab_dict:
+        temp = key.split(', ')
+        s = temp[0] + ' ' + temp[1] + ' ' + '\t' + str(count_ab_dict[key])
+        q_file_object.write(s+'\n')
+    for key in count_bc_dict:
+        temp = key.split(', ')
+        s = temp[0] + ' ' + temp[1] + ' ' + '\t' + str(count_bc_dict[key])
+        q_file_object.write(s+'\n')
+    for key in count_b_dict:
+        s = key + '\t' + str(count_b_dict[key])
+        q_file_object.write(s+'\n')
+    for key in count_c_dict:
+        s = key + '\t' + str(count_c_dict[key])
+        q_file_object.write(s+'\n')
 
 
     return
