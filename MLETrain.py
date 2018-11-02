@@ -14,10 +14,10 @@ def computeQE(input_file_name, q_fileName, e_fileName):
     pp_e_dict={}#for each pair (i.e in the example the denominator)
     pp_e_dict['OTHER'] = 0
     #strings for PP that are not in the list
-    strForOtherStringsTags = "";
-    strForOtherStrings = "";
+    strForOtherStringsTags = ""
+    strForOtherStrings = ""
     #read from file
-    with open (input_file_name) as f:
+    with open(input_file_name) as f:
         for line in f:
             splitted_line = line.split()
             for pair in splitted_line:
@@ -35,13 +35,75 @@ def computeQE(input_file_name, q_fileName, e_fileName):
                     strForOtherStringsTags += ',' + splitted_pair[-1]
                     strForOtherStrings += ',' + splitted_pair[0];
                     pp_e_dict['OTHER'] += 1
-
+    #calculate q:
     numOfWords = sum(value for key, value in pp_e_dict.iteritems())
-    print numOfWords
+    q_val_dict={}
+    count_abc_dict={}
+    count_ab_dict={}
+    count_bc_dict={}
+    count_b_dict = {}
+    count_c_dict = {}
+    words = ["","",""]
+    count = 0
+    numOfWords2 = 0
+    temp = ""
+    with open(input_file_name) as f:
+        for line in f:
+            splitted_line = line.split()
+            for pair in splitted_line:
+                words[count] = getWordFromPair(pair, '/')
+                numOfWords2 += 1
+                count += 1
+                #got 3 words
+                if count == 3:
+                    #count the 3 words
+                    triple = ', '.join(words)
+                    if triple in count_abc_dict:
+                        count_abc_dict[triple] += 1
+                    else:
+                        count_abc_dict[triple] = 1
+                    #count ab
+                    ab = words[0] + ', ' + words[1]
+                    if ab in count_ab_dict:
+                        count_ab_dict[ab] += 1
+                    else:
+                        count_ab_dict[ab] = 1
+                    #count bc
+                    bc = words[1] + ', ' + words[2]
+                    if bc in count_bc_dict:
+                        count_bc_dict[bc] += 1
+                    else:
+                        count_bc_dict[bc] = 1
+                    #count b
+                    b = words[1]
+                    if b in count_b_dict:
+                        count_b_dict[b] += 1
+                    else:
+                        count_b_dict[b] = 1
+                    #count c
+                    c = words[2]
+                    if c in count_c_dict:
+                        count_c_dict[c] += 1
+                    else:
+                        count_c_dict[c] = 1
 
+                    #for the next 3 words
+                    words[0] = words[1]
+                    words[1] = words[2]
+                    words[2] = ""
+                    count = 0
 
+    return
 
-    print "hello"
+def getWordFromPair(pair, seperator):
+    temp = pair.split(seperator)
+    length = len(temp)
+    count = 0
+    word=""
+    while count != length-1:
+        word += temp[count]
+        count += 1
+    return word
 
 
 def main():
