@@ -47,6 +47,7 @@ def computeQE(input_file_name, q_fileName, e_fileName):
     count = 0
     numOfWords2 = 0
     temp = ""
+    f.close()
     with open(input_file_name) as f:
         for line in f:
             splitted_line = line.split()
@@ -92,19 +93,7 @@ def computeQE(input_file_name, q_fileName, e_fileName):
                     words[1] = words[2]
                     words[2] = ""
                     count = 2
-    #calcute the q values:
-    lambda1 = 0.33
-    lambda2 = 0.33
-    lambda3 = 0.34
-
-    for key, value in count_abc_dict.iteritems():
-        temp = key.split(", ")
-        ab = temp[0] + ', ' + temp[1]
-        bc = temp[1] + ', ' + temp[2]
-        newKey = temp[2]+',' + temp[0] + ', ' + temp[1]
-        q_val_dict[newKey] = lambda1*(count_abc_dict[key]/count_ab_dict[ab]) + \
-                             lambda2*(count_bc_dict[bc]/count_b_dict[temp[1]]) + lambda3*(count_c_dict[temp[2]]/numOfWords2)
-
+    f.close()
     #write to the files:
     e_file_object = open(e_fileName, 'w')
     for key in e_dict:
@@ -113,8 +102,10 @@ def computeQE(input_file_name, q_fileName, e_fileName):
         classification = temp[-1]
         s = word + ' ' + classification + '\t' + str(e_dict[key])
         e_file_object.write(s+'\n')
+    e_file_object.close()
     #write q values:
     q_file_object = open(q_fileName, 'w')
+    s = '^numOfWords' + '\t' + str(numOfWords2)
     for key in count_abc_dict:
         temp = key.split(', ')
         s = temp[0] + ' ' + temp[1] + ' ' + temp[2] + '\t' + str(count_abc_dict[key])
@@ -134,7 +125,7 @@ def computeQE(input_file_name, q_fileName, e_fileName):
         s = key + '\t' + str(count_c_dict[key])
         q_file_object.write(s+'\n')
 
-
+    q_file_object.close()
     return
 
 def getWordFromPair(pair, seperator):
@@ -147,10 +138,83 @@ def getWordFromPair(pair, seperator):
         count += 1
     return word
 
+
+'''caculate q value according to the data given in the file q.mle.
+    in case one or more (but not all of them) of the denominator is zero then calculate without it.
+    in all the denominators are zero, it will return -1
+'''
+def computeQ(t1, t2, t3):
+    #calcute the q values:
+    lambda1 = 0.33
+    lambda2 = 0.33
+    lambda3 = 0.34
+    qEventsFileName = 'q.mle'
+    #go over the file and find the counts needed
+    abc = t1 + ' ' + t2 + ' ' + t3
+    ab = t1 + ' ' + t2
+    bc = t2 + ' ' + t3
+    b = t2
+    c = t3
+    numOfWords = '^numOfWords'
+    values_dict={}
+    #initialize values of dictionary
+    values_dict[abc] = 0
+    values_dict[ab] = 0
+    values_dict[bc] = 0
+    values_dict[b] = 0
+    values_dict[c] = 0
+    values_dict[numOfWords] = 0
+    counter = 0
+    with open(qEventsFileName) as f:
+        for line in f:
+            splitted_line = line.split('\t')
+            if(len(splitted_line) < 2):
+                print 'error in splitting line according to \t in q calculation\nline is: ' + line + '\n'
+            if (counter == 6):
+            #make calculation and return
+                break
+            if splitted_line[0] == abc:
+                values_dict[abc] = int(splitted_line[1])
+            elif splitted_line[0] == ab:
+                values_dict[ab] = int(splitted_line[1])
+            elif splitted_line[0] == bc:
+                values_dict[bc] = int(splitted_line[1])
+            elif splitted_line[0] == b:
+                values_dict[b] = int(splitted_line[1])
+            elif splitted_line[0] == c:
+                values_dict[c] = int(splitted_line[1])
+            elif splitted_line[0]  == numOfWords:
+                values_dict[numOfWords] = int(splitted_line[1])
+
+    file.close()
+    #handle the different cases that can be
+    if(values_dict[ab] > 0 and values_dict[b] >0 and values_dict[numOfWords] >0 ):
+        return (lambda1 * (values_dict[abc] / values_dict[ab]) + lambda2 * (values_dict[bc] / values_dict[b]) +
+                lambda3 * (values_dict[c] / values_dict[numOfWords]))
+    elif values_dict[ab] < 1 and values_dict[b] >0 and values_dict[numOfWords] > 0:
+        return (lambda2 * (values_dict[bc] / values_dict[b]) +
+                lambda3 * (values_dict[c] / values_dict[numOfWords]))
+    elif values_dict[b] < 1 and values_dict[ab] > 0 and values_dict[numOfWords] > 0:
+        return (lambda1 * (values_dict[abc] / values_dict[ab]) + lambda3 * (values_dict[c] / values_dict[numOfWords]))
+    elif values_dict[numOfWords] < 1 and values_dict[ab] > 0 and values_dict[b] > 0:
+        return (lambda1 * (values_dict[abc] / values_dict[ab]) + lambda2 * (values_dict[bc] / values_dict[b]))
+    elif values_dict[ab]< 1 and values_dict[b]<1 and values_dict[numOfWords] > 0:
+        return lambda3 * (values_dict[c] / values_dict[numOfWords])
+    elif values_dict[ab] < 1 and values_dict[numOfWords] < 1 and values_dict[b] > 0:
+        return lambda2 * (values_dict[bc] / values_dict[b])
+    elif values_dict[b] < 1 and values_dict[numOfWords] < 1 and values_dict[ab] > 0:
+        return lambda1 * (values_dict[abc] / values_dict[ab])
+    else:
+        return -1
+
+
+def computeE(w, t):
+    eEventsFileName = 'e.mle'
+
 def main():
     print("hello world")
-   # computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "a", "b")
-    computeQE("/home/efrat/Documents/nlp/ass1/data/test", "a", "b")
+   # computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "e.mle", "q.mle")
+    computeQE("/home/efrat/Documents/nlp/ass1/data/test", "e.mle", "q.mle")
 
 if __name__ == "__main__":
         main()
