@@ -35,7 +35,7 @@ def computeQE(input_file_name, q_fileName, e_fileName):
                     strForOtherStringsTags += ',' + splitted_pair[-1]
                     strForOtherStrings += ',' + splitted_pair[0];
                     pp_e_dict['OTHER'] += 1
-    #calculate q:
+    #calculate q interpolated values:
     numOfWords = sum(value for key, value in pp_e_dict.iteritems())
     q_val_dict={}
     count_abc_dict={}
@@ -91,7 +91,20 @@ def computeQE(input_file_name, q_fileName, e_fileName):
                     words[0] = words[1]
                     words[1] = words[2]
                     words[2] = ""
-                    count = 0
+                    count = 2
+    #calcute the q values:
+    lambda1 = 0.33
+    lambda2 = 0.33
+    lambda3 = 0.34
+
+    for key, value in count_abc_dict.iteritems():
+        temp = key.split(", ")
+        ab = temp[0] + ', ' + temp[1]
+        bc = temp[1] + ', ' + temp[2]
+        newKey = temp[2]+'|' + temp[0] + ', ' + temp[1]
+        q_val_dict[newKey] = lambda1*(count_abc_dict[key]/count_ab_dict[ab]) + \
+                             lambda2*(count_bc_dict[bc]/count_b_dict[temp[1]]) + lambda3*(count_c_dict[temp[2]]/numOfWords2)
+
 
     return
 
@@ -105,11 +118,10 @@ def getWordFromPair(pair, seperator):
         count += 1
     return word
 
-
 def main():
     print("hello world")
-    computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "a", "b")
-
+   # computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "a", "b")
+    computeQE("/home/efrat/Documents/nlp/ass1/data/test", "a", "b")
 
 if __name__ == "__main__":
         main()
