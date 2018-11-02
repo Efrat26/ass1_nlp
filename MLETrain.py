@@ -47,7 +47,7 @@ def computeQE(input_file_name, q_fileName, e_fileName):
     count = 0
     numOfWords2 = 0
     temp = ""
-    f.close()
+    #f.close()
     with open(input_file_name) as f:
         for line in f:
             splitted_line = line.split()
@@ -93,7 +93,7 @@ def computeQE(input_file_name, q_fileName, e_fileName):
                     words[1] = words[2]
                     words[2] = ""
                     count = 2
-    f.close()
+    #f.close()
     #write to the files:
     e_file_object = open(e_fileName, 'w')
     for key in e_dict:
@@ -102,7 +102,7 @@ def computeQE(input_file_name, q_fileName, e_fileName):
         classification = temp[-1]
         s = word + ' ' + classification + '\t' + str(e_dict[key])
         e_file_object.write(s+'\n')
-    e_file_object.close()
+    #e_file_object.close()
     #write q values:
     q_file_object = open(q_fileName, 'w')
     s = '^numOfWords' + '\t' + str(numOfWords2)
@@ -125,7 +125,7 @@ def computeQE(input_file_name, q_fileName, e_fileName):
         s = key + '\t' + str(count_c_dict[key])
         q_file_object.write(s+'\n')
 
-    q_file_object.close()
+    #q_file_object.close()
     return
 
 def getWordFromPair(pair, seperator):
@@ -141,7 +141,7 @@ def getWordFromPair(pair, seperator):
 
 '''caculate q value according to the data given in the file q.mle.
     in case one or more (but not all of them) of the denominator is zero then calculate without it.
-    in all the denominators are zero, it will return -1
+    in all the denominators are zero, it will return 0
 '''
 def computeQ(t1, t2, t3):
     #calcute the q values:
@@ -170,6 +170,7 @@ def computeQ(t1, t2, t3):
             splitted_line = line.split('\t')
             if(len(splitted_line) < 2):
                 print 'error in splitting line according to \t in q calculation\nline is: ' + line + '\n'
+                continue
             if (counter == 6):
             #make calculation and return
                 break
@@ -186,7 +187,7 @@ def computeQ(t1, t2, t3):
             elif splitted_line[0]  == numOfWords:
                 values_dict[numOfWords] = int(splitted_line[1])
 
-    file.close()
+    #file.close()
     #handle the different cases that can be
     if(values_dict[ab] > 0 and values_dict[b] >0 and values_dict[numOfWords] >0 ):
         return (lambda1 * (values_dict[abc] / values_dict[ab]) + lambda2 * (values_dict[bc] / values_dict[b]) +
@@ -205,16 +206,47 @@ def computeQ(t1, t2, t3):
     elif values_dict[b] < 1 and values_dict[numOfWords] < 1 and values_dict[ab] > 0:
         return lambda1 * (values_dict[abc] / values_dict[ab])
     else:
-        return -1
+        return 0
 
-
+'''
+compute e value according to the values given in the file e.mle
+in case the denominator is zero, it will return 0
+'''
 def computeE(w, t):
     eEventsFileName = 'e.mle'
+    count_wt = 0
+    count_t = 0
+    w_and_t = w + ' ' + t
+    count = 0
+    with open(eEventsFileName) as f:
+        for line in f:
+            splitted_line = line.split('\t')
+            if len(splitted_line) < 2:
+                print 'error with spliiting line with \t, line is: ' + line
+                continue
+            if count == 2:
+                break
+            if splitted_line[0] == w_and_t:
+                count_wt = int(splitted_line[1])
+                count += 1
+            elif splitted_line[0] == t:
+                count_t = int(splitted_line[1])
+                count += 1
+    #f.close()
+    if(count_t > 1):
+        return (count_wt / count_t)
+    return 0
+
+
 
 def main():
     print("hello world")
    # computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "e.mle", "q.mle")
     computeQE("/home/efrat/Documents/nlp/ass1/data/test", "e.mle", "q.mle")
+    q_result = computeQ('NP', 'NNP', 'P')
+    print 'result from compute q is: ' + str(q_result)
+    e_result = computeE('Efrat', 'NP')
+    print 'result from compute e is: ' + str(e_result)
 
 if __name__ == "__main__":
         main()
