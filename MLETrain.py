@@ -147,7 +147,7 @@ def getWordFromPair(pair, seperator):
     in case one or more (but not all of them) of the denominator is zero then calculate without it.
     in all the denominators are zero, it will return 0
 '''
-def computeQ(t1, t2, t3):
+def computeQ(t1, t2, t3, values_dict):
     #calcute the q values:
     lambda1 = 0.33
     lambda2 = 0.33
@@ -160,59 +160,32 @@ def computeQ(t1, t2, t3):
     b = t2
     c = t3
     numOfWords = '^numOfWords'
-    values_dict={}
-    #initialize values of dictionary
-    values_dict[abc] = 0
-    values_dict[ab] = 0
-    values_dict[bc] = 0
-    values_dict[b] = 0
-    values_dict[c] = 0
-    values_dict[numOfWords] = 0
-    counter = 0
-    with open(qEventsFileName) as f:
-        for line in f:
-            splitted_line = line.split('\t')
-            if(len(splitted_line) < 2):
-                print 'error in splitting line according to \t in q calculation\nline is: ' + line + '\n'
-                continue
-            if (counter == 6):
-            #make calculation and return
-                break
-            if splitted_line[0] == abc:
-                values_dict[abc] = float(splitted_line[1])
-                counter += 1
-            elif splitted_line[0] == ab:
-                values_dict[ab] = float(splitted_line[1])
-                counter += 1
-            elif splitted_line[0] == bc:
-                values_dict[bc] = float(splitted_line[1])
-                counter += 1
-            elif splitted_line[0] == b:
-                values_dict[b] = float(splitted_line[1])
-                counter += 1
-            elif splitted_line[0] == c:
-                values_dict[c] = float(splitted_line[1])
-                counter += 1
-            elif splitted_line[0]  == numOfWords:
-                values_dict[numOfWords] = float(splitted_line[1])
-                counter += 1
+    events_of_interest = [abc, ab, bc, b, c ,numOfWords]
+    for event in events_of_interest:
+        if event not in values_dict:
+            values_dict[event] = 0.0
 
-    #file.close()
     #handle the different cases that can be
-    result = 0
-    if(values_dict[ab] > 0 and values_dict[b] >0 and values_dict[numOfWords] >0 ):
-        result = (lambda1 * (values_dict[abc] / values_dict[ab])) + (lambda2 * (values_dict[bc] / values_dict[b])) +\
+    result = 0.0
+    if(values_dict[ab] > 0) and (values_dict[b] >0) and (values_dict[numOfWords] >0 ):
+        result = lambda1 * (values_dict[abc] / (values_dict[ab])) +\
+                 (lambda2 * (values_dict[bc] / (values_dict[b]))) +\
                  (lambda3 * (values_dict[c] / values_dict[numOfWords]))
     elif values_dict[ab] < 1 and values_dict[b] > 0 and values_dict[numOfWords] > 0:
         result = lambda2 * (values_dict[bc] / values_dict[b]) +\
                 lambda3 * (values_dict[c] / values_dict[numOfWords])
     elif values_dict[b] < 1 and values_dict[ab] > 0 and values_dict[numOfWords] > 0:
-        result = lambda1 * (values_dict[abc] / values_dict[ab]) + lambda3 * (values_dict[c] / values_dict[numOfWords])
-    elif values_dict[numOfWords] < 1 and values_dict[ab] > 0 and values_dict[b] > 0:
-        result = lambda1 * (values_dict[abc] / values_dict[ab]) + lambda2 * (values_dict[bc] / values_dict[b])
-    elif values_dict[ab]< 1 and values_dict[b]<1 and values_dict[numOfWords] > 0:
+        result = lambda1 * (values_dict[abc] / values_dict[ab]) + \
+                 lambda3 * (values_dict[c] / values_dict[numOfWords])
+    elif values_dict[numOfWords] < 1 and values_dict[ab] > 0 and \
+            values_dict[b] > 0:
+        result = lambda1 * (values_dict[abc] / values_dict[ab]) +\
+                 lambda2 * (values_dict[bc] / values_dict[b])
+    elif values_dict[ab]< 1 and values_dict[b]<1 and \
+            values_dict[numOfWords] > 0:
         result = lambda3 * (values_dict[c] / values_dict[numOfWords])
-    elif values_dict[ab] < 1 and values_dict[numOfWords] < 1 and values_dict[b] > 0:
+    elif values_dict[ab] < 1 and \
+            values_dict[numOfWords] < 1 and values_dict[b] > 0:
         result = lambda2 * (values_dict[bc] / values_dict[b])
     elif values_dict[b] < 1 and values_dict[numOfWords] < 1 and values_dict[ab] > 0:
         result = lambda1 * (values_dict[abc] / values_dict[ab])
@@ -223,27 +196,17 @@ def computeQ(t1, t2, t3):
 compute e value according to the values given in the file e.mle
 in case the denominator is zero, it will return 0
 '''
-def computeE(w, t):
+def computeE(w, t, values_dict):
     eEventsFileName = 'e.mle'
     count_wt = 0
     count_t = 0
     w_and_t = w + ' ' + t
-    count = 0
-    with open(eEventsFileName) as f:
-        for line in f:
-            splitted_line = line.split('\t')
-            if len(splitted_line) < 2:
-                print 'error with spliiting line with \t, line is: ' + line
-                continue
-            if count == 2:
-                break
-            if splitted_line[0] == w_and_t:
-                count_wt = float(splitted_line[1])
-                count += 1
-            elif splitted_line[0] == t:
-                count_t = float(splitted_line[1])
-                count += 1
-    #f.close()
+    events_of_interest = [w_and_t, t]
+    for event in events_of_interest:
+        if event not in values_dict:
+            values_dict[event] = 0
+    count_t = float(values_dict[t])
+    count_wt = float(values_dict[w_and_t])
     if(count_t > 1):
         return (count_wt / count_t)
     return 0
@@ -252,11 +215,14 @@ def computeE(w, t):
 
 def main():
     #print("hello world")
-    computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")
+    #computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")
+    computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
+    '''
     q_result = computeQ('WDT', 'CD', 'NNS')
     print 'q result is: '+ str(q_result) + '\n'
     e_result = computeE('stacked', 'VBN')
     print 'e result is: ' + str(e_result) + '\n'
+    '''
     '''
     computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
     q_result = computeQ('NP', 'NNP', 'P')
