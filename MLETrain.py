@@ -4,10 +4,10 @@
 
 def computeQE(input_file_name, q_fileName, e_fileName):
     ####calculate e values
-    listOfPossiblePP = {'NN', 'NNS', 'NNP', 'NNPS', 'PRP', 'WP', 'VB', 'VBD', 'VBG', 'VBN', 'VBZ', 'VBP', 'MD', 'TO',
+    listOfPossiblePP = ['NN', 'NNS', 'NNP', 'NNPS', 'PRP', 'WP', 'VB', 'VBD', 'VBG', 'VBN', 'VBZ', 'VBP', 'MD', 'TO',
                         'JJ', 'JJR', 'JJS', 'RB', 'RBR','RBS', 'IN', 'WDT', 'DT', 'CC', 'RP', 'PRP$', 'POS', 'WRB',
                         'CD', 'PDT', 'FW', 'EX', 'SYM', 'LS', 'PDT', 'WP$', 'UH', '#', '.', ')', '(', '$', ',', ':',
-                        '``', "''", 'OTHER'}
+                        '``', "''", 'OTHER']
     #calculate e value, example: e(book|NN) = count(book,NN)\count(NN) and
     #calculate q values: q(c|a,b) = L1*count(a,b,c)/count(a,b) + L2*count(b,c)/count(b) + L3*count(c)/(num of words)
     e_dict = {} #for each pair (i.e in the example the numerator)
@@ -147,7 +147,7 @@ def getWordFromPair(pair, seperator):
     in case one or more (but not all of them) of the denominator is zero then calculate without it.
     in all the denominators are zero, it will return 0
 '''
-def computeQ(t1, t2, t3, values_dict):
+def computeQ(t1, t2, t3, values_dict, numOfWords):
     #calcute the q values:
     lambda1 = 0.33
     lambda2 = 0.33
@@ -215,8 +215,8 @@ def computeE(w, t, values_dict):
 
 def main():
     #print("hello world")
-    #computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")
-    computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
+    computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")
+    #computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
     '''
     q_result = computeQ('WDT', 'CD', 'NNS')
     print 'q result is: '+ str(q_result) + '\n'
