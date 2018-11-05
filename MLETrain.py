@@ -147,18 +147,18 @@ def getWordFromPair(pair, seperator):
     in case one or more (but not all of them) of the denominator is zero then calculate without it.
     in all the denominators are zero, it will return 0
 '''
-def computeQ(t1, t2, t3, values_dict, numOfWords):
+def computeQ(newTag, two_before_new, one_before, values_dict):
     #calcute the q values:
     lambda1 = 0.33
     lambda2 = 0.33
     lambda3 = 0.34
     qEventsFileName = 'q.mle'
     #go over the file and find the counts needed
-    abc = t1 + ' ' + t2 + ' ' + t3
-    ab = t1 + ' ' + t2
-    bc = t2 + ' ' + t3
-    b = t2
-    c = t3
+    abc = two_before_new + ' ' + one_before + ' ' + newTag
+    ab = two_before_new + ' ' + one_before
+    bc = one_before + ' ' + newTag
+    b = one_before
+    c = newTag
     numOfWords = '^numOfWords'
     events_of_interest = [abc, ab, bc, b, c ,numOfWords]
     for event in events_of_interest:
@@ -167,30 +167,16 @@ def computeQ(t1, t2, t3, values_dict, numOfWords):
 
     #handle the different cases that can be
     result = 0.0
-    if(values_dict[ab] > 0) and (values_dict[b] >0) and (values_dict[numOfWords] >0 ):
-        result = lambda1 * (values_dict[abc] / (values_dict[ab])) +\
-                 (lambda2 * (values_dict[bc] / (values_dict[b]))) +\
-                 (lambda3 * (values_dict[c] / values_dict[numOfWords]))
-    elif values_dict[ab] < 1 and values_dict[b] > 0 and values_dict[numOfWords] > 0:
-        result = lambda2 * (values_dict[bc] / values_dict[b]) +\
-                lambda3 * (values_dict[c] / values_dict[numOfWords])
-    elif values_dict[b] < 1 and values_dict[ab] > 0 and values_dict[numOfWords] > 0:
-        result = lambda1 * (values_dict[abc] / values_dict[ab]) + \
-                 lambda3 * (values_dict[c] / values_dict[numOfWords])
-    elif values_dict[numOfWords] < 1 and values_dict[ab] > 0 and \
-            values_dict[b] > 0:
-        result = lambda1 * (values_dict[abc] / values_dict[ab]) +\
-                 lambda2 * (values_dict[bc] / values_dict[b])
-    elif values_dict[ab]< 1 and values_dict[b]<1 and \
-            values_dict[numOfWords] > 0:
-        result = lambda3 * (values_dict[c] / values_dict[numOfWords])
-    elif values_dict[ab] < 1 and \
-            values_dict[numOfWords] < 1 and values_dict[b] > 0:
-        result = lambda2 * (values_dict[bc] / values_dict[b])
-    elif values_dict[b] < 1 and values_dict[numOfWords] < 1 and values_dict[ab] > 0:
-        result = lambda1 * (values_dict[abc] / values_dict[ab])
-
-    return result
+    p1 = 0.0
+    p2 = 0.0
+    p3 = 0.0
+    if values_dict[ab] != 0:
+        p1 =  lambda1 * (values_dict[abc] / (values_dict[ab]))
+    if values_dict[b] != 0:
+        p2 = lambda2 * (values_dict[bc] / (values_dict[b]))
+    if values_dict[numOfWords] != 0:
+        p3 = lambda3 * (values_dict[c] / values_dict[numOfWords])
+    return (p1+p2+p3)
 
 '''
 compute e value according to the values given in the file e.mle

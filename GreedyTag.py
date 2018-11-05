@@ -46,31 +46,49 @@ def findMaxTag (w, e_vals_dict, q_vals_dict, previousTags):
                         'JJ', 'JJR', 'JJS', 'RB', 'RBR','RBS', 'IN', 'WDT', 'DT', 'CC', 'RP', 'PRP$', 'POS', 'WRB',
                         'CD', 'PDT', 'FW', 'EX', 'SYM', 'LS', 'PDT', 'WP$', 'UH', '#', '.', ')', '(', '$', ',', ':',
                         '``', "''"]
-    max_value = 0.0
+    result = 0.0
     max_tag = listOfPossiblePP[0]
+    max_result = 0.0
     for tag in listOfPossiblePP:
-        resultQ = findQValue(tag, previousTags,q_vals_dict)
-        resultE = findEValue(w,tag,e_vals_dict)
-        temp = resultE*resultQ
-        if temp > max_value:
-            max_value = temp
-            max_tag = tag
+        if len(previousTags) >= 2:
+            result = calculateMaxAccordingToTag(w, tag, previousTags[-2], previousTags[-1], q_vals_dict, e_vals_dict)
+            if result > max_result:
+                max_result = result
+                max_tag = tag
+        elif len(previousTags) == 1:
+            for possibleTag in listOfPossiblePP:
+                result = calculateMaxAccordingToTag(w, tag, previousTags[-1], possibleTag, q_vals_dict,
+                                                    e_vals_dict)
+                if result > max_result:
+                    max_result = result
+                    max_tag = tag
+        elif len(previousTags) == 0:
+            for i in range(0,len(listOfPossiblePP)-1):
+                for j in range(0, len(listOfPossiblePP)-1):
+                    result = calculateMaxAccordingToTag(w, tag, listOfPossiblePP[i], listOfPossiblePP[j], q_vals_dict,
+                                                        e_vals_dict)
+                    if result > max_result:
+                        max_result = result
+                        max_tag = tag
     return max_tag
 
 
+
+
+def calculateMaxAccordingToTag(w,new_t,two_before,one_before,q_vals, e_vals):
+    resultQ = findQValue(new_t,two_before,one_before, q_vals)
+    resultE = findEValue(w, new_t, e_vals)
+    return resultE * resultQ
 
 def findEValue(word, tag, e_events_tags):
 
     result = MLETrain.computeE(word,tag,e_events_tags)
     return result
 
-def findQValue(tag, previous_tags, q_events_dict):
+def findQValue(new_t,two_before,one_before, q_events_dict):
     result = 0.0
-    numOfWords = 40116
-    if len(previous_tags) < 2:
-        result = MLETrain.computeQ(tag,'JJ', 'NNS', q_events_dict,numOfWords)
-    else:
-        result = MLETrain.computeQ(tag, previous_tags[-2], previous_tags[-1], q_events_dict,numOfWords)
+
+    result = MLETrain.computeQ(new_t,two_before,one_before, q_events_dict)
     return result
 
 
@@ -102,6 +120,7 @@ def preprocessForE(eEventsFileName):
 def main():
     print 'hello world'
     #greedyTag('/home/efrat/Documents/nlp/ass1/data/input test', 'q.mle', 'e.mle', 'output', 'extra')
+    # calculateAccurecy('output', '/home/efrat/Documents/nlp/ass1/data/test result')
     greedyTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input', 'q.mle', 'e.mle', 'output', 'extra')
     calculateAccurecy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
 if __name__ == "__main__":
