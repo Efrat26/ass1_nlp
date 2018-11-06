@@ -201,8 +201,8 @@ def computeE(w, t, values_dict):
 
 def main():
     #print("hello world")
-    computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")
-    #computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
+    #computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")
+    computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
     '''
     q_result = computeQ('WDT', 'CD', 'NNS')
     print 'q result is: '+ str(q_result) + '\n'
