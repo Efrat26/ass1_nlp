@@ -16,11 +16,35 @@ def computeQE(input_file_name, q_fileName, e_fileName):
     #strings for PP that are not in the list
     strForOtherStringsTags = ""
     strForOtherStrings = ""
-    #read from file
+
+    ''' read lines from file and then split it into pairs of 'word/tag' and count it for the e values
+    and also count the tag appearances '''
+    f = open(input_file_name, 'r')
+    lines = f.read().splitlines()
+    pairs = []
+    for line in lines:
+        temp = line.split(' ')
+        for pair in temp:
+            pairs.append(pair)
+            if pair in e_dict:
+                e_dict[pair] += 1
+            else:
+                e_dict[pair] = 1
+            t = getTagFromPair(pair, '/')
+            if t is not None:
+                if t in pp_e_dict:
+                    pp_e_dict[t] += 1
+                else:
+                    pp_e_dict[t] = 1
+    '''calculate the q values'''
+
+    print 'hey'
+    '''
     with open(input_file_name) as f:
         for line in f:
-            splitted_line = line.split()
-            for pair in splitted_line:
+            splitted_text = line.split('\n')#seperate to sentences
+            for sentence in splitted_text:
+                
                 if pair in e_dict:
                     e_dict[pair] += 1
                 else:
@@ -50,8 +74,8 @@ def computeQE(input_file_name, q_fileName, e_fileName):
     #f.close()
     with open(input_file_name) as f:
         for line in f:
-            splitted_line = line.split()
-            for pair in splitted_line:
+            splitted_text = line.split('\n')
+            for pair in splitted_text:
                 words[count] = pair.split('/')[-1]
                 numOfWords2 += 1
                 count += 1
@@ -131,7 +155,7 @@ def computeQE(input_file_name, q_fileName, e_fileName):
 
     #q_file_object.close()
     return
-
+'''
 def getWordFromPair(pair, seperator):
     temp = pair.split(seperator)
     length = len(temp)
@@ -142,6 +166,12 @@ def getWordFromPair(pair, seperator):
         count += 1
     return word
 
+def getTagFromPair(pair, sep):
+    splitted_pair = pair.split(sep)
+    if splitted_pair != None:
+        return splitted_pair[-1]
+    else:
+        return None
 
 '''calculate q value according to the data given in the file q.mle.
     in case one or more (but not all of them) of the denominator is zero then calculate without it.
@@ -201,8 +231,8 @@ def computeE(w, t, values_dict):
 
 def main():
     #print("hello world")
-    #computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")
-    computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
+    computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")
+    #computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
     '''
     q_result = computeQ('WDT', 'CD', 'NNS')
     print 'q result is: '+ str(q_result) + '\n'
