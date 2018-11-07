@@ -36,135 +36,102 @@ def computeQE(input_file_name, q_fileName, e_fileName):
                     pp_e_dict[t] += 1
                 else:
                     pp_e_dict[t] = 1
+    print 'finished calculating e'
     '''calculate the q values'''
+    word_count = 0
+    abc_dict = {}
+    ab_dict = {}
+    bc_dict = {}
+    b_dict={}
+    c_dict = {}
 
+    for line in lines:
+        splitted_line = line.split(' ')
+        list_of_tags = getListOfTags(splitted_line, '/')
+        word_count += len(list_of_tags)
+        list_of_tags.insert(0, 'start')
+        list_of_tags.insert(1, 'start')
+        calculateQValsTriple(list_of_tags, abc_dict)
+        calculateQValsDouble(list_of_tags, ab_dict)
+        calculateQValsDouble(list_of_tags, bc_dict)
+        calculateQValsSingle(list_of_tags, b_dict)
+        calculateQValsSingle(list_of_tags, c_dict)
+    print 'finished calculating q'
+    writeEValsToFile(e_fileName, e_dict, pp_e_dict)
+    print 'finished writing e vals'
+    writeQVals(q_fileName, word_count,abc_dict, ab_dict, bc_dict, b_dict, c_dict)
+    print 'finished writing q vals'
     print 'hey'
-    '''
-    with open(input_file_name) as f:
-        for line in f:
-            splitted_text = line.split('\n')#seperate to sentences
-            for sentence in splitted_text:
-                
-                if pair in e_dict:
-                    e_dict[pair] += 1
-                else:
-                    e_dict[pair] = 1
-                #split the word to get the count of the pp classication
-                splitted_pair = pair.split('/')
-                if splitted_pair[-1] in pp_e_dict and splitted_pair[-1] in listOfPossiblePP:
-                    pp_e_dict[splitted_pair[-1]] += 1
-                elif splitted_pair[-1] in listOfPossiblePP:
-                    pp_e_dict[splitted_pair[-1]] = 1
-                else:
-                    strForOtherStringsTags += ',' + splitted_pair[-1]
-                    strForOtherStrings += ',' + splitted_pair[0];
-                    pp_e_dict['OTHER'] += 1
-    #calculate q interpolated values:
-    numOfWords = sum(value for key, value in pp_e_dict.iteritems())
-    q_val_dict={}
-    count_abc_dict={}
-    count_ab_dict={}
-    count_bc_dict={}
-    count_b_dict = {}
-    count_c_dict = {}
-    words = ["","",""]
-    count = 0
-    numOfWords2 = 0
-    temp = ""
-    #f.close()
-    with open(input_file_name) as f:
-        for line in f:
-            splitted_text = line.split('\n')
-            for pair in splitted_text:
-                words[count] = pair.split('/')[-1]
-                numOfWords2 += 1
-                count += 1
-                #got 3 words
-                if count == 3:
-                    #count the 3 words
-                    triple = ', '.join(words)
-                    if triple in count_abc_dict:
-                        count_abc_dict[triple] += 1
-                    else:
-                        count_abc_dict[triple] = 1
-                    #count ab
-                    ab = words[0] + ', ' + words[1]
-                    if ab in count_ab_dict:
-                        count_ab_dict[ab] += 1
-                    else:
-                        count_ab_dict[ab] = 1
-                    #count bc
-                    bc = words[1] + ', ' + words[2]
-                    if bc in count_bc_dict:
-                        count_bc_dict[bc] += 1
-                    else:
-                        count_bc_dict[bc] = 1
-                    #count b
-                    b = words[1]
-                    if b in count_b_dict:
-                        count_b_dict[b] += 1
-                    else:
-                        count_b_dict[b] = 1
-                    #count c
-                    c = words[2]
-                    if c in count_c_dict:
-                        count_c_dict[c] += 1
-                    else:
-                        count_c_dict[c] = 1
 
-                    #for the next 3 words
-                    words[0] = words[1]
-                    words[1] = words[2]
-                    words[2] = ""
-                    count = 2
-    #f.close()
-    #write to the files:
-    e_file_object = open(e_fileName, 'w')
+def writeEValsToFile(e_file_name, e_dict_pairs, e_dict):
+    f = open(e_file_name, 'w')
+    for pair in e_dict_pairs:
+        temp = pair.split('/')
+        s = temp[0] + ' ' + temp[1] + '\t' + str(e_dict_pairs[pair])
+        f.write(s + '\n')
     for key in e_dict:
-        temp = key.split('/')
-        word = getWordFromPair(key, '/')
-        classification = temp[-1]
-        s = word + ' ' + classification + '\t' + str(e_dict[key])
-        e_file_object.write(s+'\n')
-    for key in pp_e_dict:
-        s = key + '\t' + str(pp_e_dict[key])
-        e_file_object.write(s+'\n')
-    #e_file_object.close()
-    #write q values:
-    q_file_object = open(q_fileName, 'w')
-    s = '^numOfWords' + '\t' + str(numOfWords2)
-    q_file_object.write(s + '\n')
-    for key in count_abc_dict:
-        temp = key.split(', ')
-        s = temp[0] + ' ' + temp[1] + ' ' + temp[2] + '\t' + str(count_abc_dict[key])
-        q_file_object.write(s+'\n')
-    for key in count_ab_dict:
-        temp = key.split(', ')
-        s = temp[0] + ' ' + temp[1] + ' ' + '\t' + str(count_ab_dict[key])
-        q_file_object.write(s+'\n')
-    for key in count_bc_dict:
-        temp = key.split(', ')
-        s = temp[0] + ' ' + temp[1] + ' ' + '\t' + str(count_bc_dict[key])
-        q_file_object.write(s+'\n')
-    for key in count_b_dict:
-        s = key + '\t' + str(count_b_dict[key])
-        q_file_object.write(s+'\n')
-    for key in count_c_dict:
-        s = key + '\t' + str(count_c_dict[key])
-        q_file_object.write(s+'\n')
+        s = key + '\t' + str(e_dict[key])
+        f.write(s + '\n')
 
-    #q_file_object.close()
-    return
-'''
-def getWordFromPair(pair, seperator):
-    temp = pair.split(seperator)
-    length = len(temp)
-    count = 0
-    word=""
-    while count != length-1:
-        word += temp[count]
-        count += 1
-    return word
+
+def writeQVals(q_file_name, num_of_words, abc_d, ab_d, bc_d, b_d, c_d):
+    f = open(q_file_name, 'w')
+    list_of_d = [abc_d, ab_d, bc_d, b_d,c_d]
+    for dictionary in list_of_d:
+        for key in dictionary:
+            s = key + '\t' + str(dictionary[key])
+            f.write(s + '\n')
+    s = '^numOfWords' + '\t' + str(num_of_words)
+    f.write(s + '\n')
+
+
+def calculateQValsTriple(listOfTags, q_dict):
+    if len(listOfTags) < 3:
+        return q_dict
+    for i in range(0, len(listOfTags)-2):
+        a = listOfTags[i]
+        b = listOfTags[i+1]
+        c = listOfTags[i+2]
+        event = a + ' ' + ' ' + b + ' ' + c
+        if event in q_dict:
+            q_dict[event] += 1
+        else:
+            q_dict[event] = 1
+    return q_dict
+
+
+def calculateQValsDouble(list_of_tags, q_val_dict):
+    if len(list_of_tags) < 2:
+        return q_val_dict
+    for i in range(0, len(list_of_tags) - 1):
+        a = list_of_tags[i]
+        b = list_of_tags[i+1]
+        event = a + ' ' + b
+        if event in q_val_dict:
+            q_val_dict[event] += 1
+        else:
+            q_val_dict[event] = 1
+    return q_val_dict
+
+
+def calculateQValsSingle(list_of_tags, q_val_dict):
+    if len(list_of_tags) < 1:
+        return q_val_dict
+    for i in range(0, len(list_of_tags)):
+        a = list_of_tags[i]
+        if a in q_val_dict:
+            q_val_dict[a] += 1
+        else:
+            q_val_dict[a] = 1
+    return q_val_dict
+
+def getListOfTags(word_tag_list, sep):
+    result = []
+    for pair in word_tag_list:
+        temp = pair.split(sep)
+        result.append(temp[-1])
+    return result
+
 
 def getTagFromPair(pair, sep):
     splitted_pair = pair.split(sep)
