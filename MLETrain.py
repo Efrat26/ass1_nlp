@@ -7,20 +7,18 @@ def computeQE(input_file_name, q_fileName, e_fileName):
     listOfPossiblePP = ['NN', 'NNS', 'NNP', 'NNPS', 'PRP', 'WP', 'VB', 'VBD', 'VBG', 'VBN', 'VBZ', 'VBP', 'MD', 'TO',
                         'JJ', 'JJR', 'JJS', 'RB', 'RBR','RBS', 'IN', 'WDT', 'DT', 'CC', 'RP', 'PRP$', 'POS', 'WRB',
                         'CD', 'PDT', 'FW', 'EX', 'SYM', 'LS', 'PDT', 'WP$', 'UH', '#', '.', ')', '(', '$', ',', ':',
-                        '``', "''", 'OTHER']
+                        '``', "''"]
     #calculate e value, example: e(book|NN) = count(book,NN)\count(NN) and
     #calculate q values: q(c|a,b) = L1*count(a,b,c)/count(a,b) + L2*count(b,c)/count(b) + L3*count(c)/(num of words)
     e_dict = {} #for each pair (i.e in the example the numerator)
     pp_e_dict={}#for each pair (i.e in the example the denominator)
-    pp_e_dict['OTHER'] = 0
-    #strings for PP that are not in the list
-    strForOtherStringsTags = ""
-    strForOtherStrings = ""
+
 
     ''' read lines from file and then split it into pairs of 'word/tag' and count it for the e values
     and also count the tag appearances '''
     f = open(input_file_name, 'r')
     lines = f.read().splitlines()
+    start_count= end_count = 2*len(lines)
     pairs = []
     for line in lines:
         temp = line.split(' ')
@@ -51,6 +49,8 @@ def computeQE(input_file_name, q_fileName, e_fileName):
         word_count += len(list_of_tags)
         list_of_tags.insert(0, 'start')
         list_of_tags.insert(1, 'start')
+        list_of_tags.insert(len(list_of_tags), 'end')
+        list_of_tags.insert(len(list_of_tags), 'end')
         calculateQValsTriple(list_of_tags, abc_dict)
         calculateQValsDouble(list_of_tags, ab_dict)
         calculateQValsDouble(list_of_tags, bc_dict)
@@ -59,7 +59,7 @@ def computeQE(input_file_name, q_fileName, e_fileName):
     print 'finished calculating q'
     writeEValsToFile(e_fileName, e_dict, pp_e_dict)
     print 'finished writing e vals'
-    writeQVals(q_fileName, word_count,abc_dict, ab_dict, bc_dict, b_dict, c_dict)
+    writeQVals(q_fileName, word_count,abc_dict, ab_dict, bc_dict, b_dict, c_dict, start_count)
     print 'finished writing q vals'
     print 'hey'
 
@@ -74,7 +74,7 @@ def writeEValsToFile(e_file_name, e_dict_pairs, e_dict):
         f.write(s + '\n')
 
 
-def writeQVals(q_file_name, num_of_words, abc_d, ab_d, bc_d, b_d, c_d):
+def writeQVals(q_file_name, num_of_words, abc_d, ab_d, bc_d, b_d, c_d, start_count):
     f = open(q_file_name, 'w')
     list_of_d = [abc_d, ab_d, bc_d, b_d,c_d]
     for dictionary in list_of_d:
@@ -82,6 +82,10 @@ def writeQVals(q_file_name, num_of_words, abc_d, ab_d, bc_d, b_d, c_d):
             s = key + '\t' + str(dictionary[key])
             f.write(s + '\n')
     s = '^numOfWords' + '\t' + str(num_of_words)
+    f.write(s + '\n')
+    s = '^strat' + '\t' +  str(start_count)
+    f.write(s + '\n')
+    s = '^end' + '\t' + str(start_count)
     f.write(s + '\n')
 
 
@@ -167,6 +171,8 @@ def computeQ(newTag, two_before_new, one_before, values_dict):
     p1 = 0.0
     p2 = 0.0
     p3 = 0.0
+
+
     if values_dict[ab] != 0:
         p1 =  lambda1 * (values_dict[abc] / (values_dict[ab]))
     if values_dict[b] != 0:
@@ -201,10 +207,11 @@ def main():
     computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")
     #computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
     '''
-    q_result = computeQ('WDT', 'CD', 'NNS')
+    q_result = computeQ('','','',)
     print 'q result is: '+ str(q_result) + '\n'
     e_result = computeE('stacked', 'VBN')
     print 'e result is: ' + str(e_result) + '\n'
+   
     '''
     '''
     computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")

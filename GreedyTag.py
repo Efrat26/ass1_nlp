@@ -7,132 +7,80 @@ def greedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_
     e_val_dict = preprocessForE(e_events_file_name)
     output_tags = []
     words = []
-    index_to_add_enter = 0
-    needToAddEnter = 0
-    len_splitted_line = 0
-    with open(input_file_name) as f:
-        for line in f:
-            splitted_line = line.split(' ')
-            for i in range(0, len(splitted_line)):
-                if i == 0:
-                    len_splitted_line = len(splitted_line)
-            #for word in splitted_line:
-                last_index = -1
-                temp = splitted_line[i]
-                temp2 = temp[-1].isalpha()
-                last_char = temp[-1]
-                if last_char == '\n':
-                    temp2 = temp[-2].isalpha()
-                    last_char = temp[-2]
-                    last_index = -2
-                    index_to_add_enter = i+1
-                    needToAddEnter = 1
-                if not temp2:
-                    temp = (splitted_line[i])[:last_index]
-                    splitted_line[i] = temp
-                    splitted_line.insert(i+1, last_char)
-
-                max_tag = findMaxTag(splitted_line[i], e_val_dict, q_val_dict, output_tags)
-                #print 'max value for word: ' + word + '  is: ' + max_tag
-                output_tags.append(max_tag)
-                words.append(splitted_line[i])
-                if(needToAddEnter and i == index_to_add_enter):
-                    t = words[-1] + '\n'
-                    words[-1] = t
-                    needToAddEnter = 0
-                if needToAddEnter and index_to_add_enter > len_splitted_line :
-                    max_tag = findMaxTag(splitted_line[index_to_add_enter], e_val_dict, q_val_dict, output_tags)
-                    # print 'max value for word: ' + word + '  is: ' + max_tag
-                    output_tags.append(max_tag)
-                    words.append(splitted_line[index_to_add_enter] + '\n')
-                    needToAddEnter = 0
-
-
-    writeToOutput(out_file_name, words, output_tags)
-
-
-def writeToOutput(outFileName, words, result):
-    temp = words
-    endsWithEnter=0
-    with open(outFileName, 'w') as f:
-        for i in range(0, len(temp)):
-            if temp[i].endswith('\n'):
-                temp[i] = (temp[i])[:-1]
-                endsWithEnter = 1
-            s = temp[i]+'/'+result[i]+' '
-            if endsWithEnter:
-                s += '\n'
-                endsWithEnter = 0
+    #read all lines
+    f = open(input_file_name, 'r')
+    lines = f.read().splitlines()
+    f = open(out_file_name, 'w')
+    ''' go over the lines and find the max tag for each word'''
+    for line in lines:
+        tags = findMaxTag(line,q_val_dict, e_val_dict)
+        splitted_line = line.split(' ')
+        for i in range(0, len(tags)):
+            s = splitted_line[i] +"/" + tags[i]+" "
             f.write(s)
-
-
-def calculateAccurecy(result_file, real_result_file):
-    counter_total = 0.0
-    counter_correct = 0.0
-    for line_from_my_res, line_from_real_res in izip(open(result_file), open(real_result_file)):
-        split_my_res = str(line_from_my_res).split(' ')
-        split_real_res = str(line_from_real_res).split(' ')
-        for i in range(0, len(split_my_res)):
-            if(split_my_res[i] == '\n'):
-                continue
-            if split_my_res[i] == split_real_res[i]:
-                counter_correct += 1
-            counter_total += 1
-    print 'accuracy result is: ' + str((counter_correct/counter_total)*100)
+        f.write('\n')
+    calculateAccuracy(out_file_name, '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
+    print 'hey'
 
 
 
 
 
-def findMaxTag (w, e_vals_dict, q_vals_dict, previousTags):
-    listOfPossiblePP = ['NN', 'NNS', 'NNP', 'NNPS', 'PRP', 'WP', 'VB', 'VBD', 'VBG', 'VBN', 'VBZ', 'VBP', 'MD', 'TO',
+def findMaxTag(line, q_vals, e_vals):
+    list_of_tags = ['NN', 'NNS', 'NNP', 'NNPS', 'PRP', 'WP', 'VB', 'VBD', 'VBG', 'VBN', 'VBZ', 'VBP', 'MD', 'TO',
                         'JJ', 'JJR', 'JJS', 'RB', 'RBR','RBS', 'IN', 'WDT', 'DT', 'CC', 'RP', 'PRP$', 'POS', 'WRB',
                         'CD', 'PDT', 'FW', 'EX', 'SYM', 'LS', 'PDT', 'WP$', 'UH', '#', '.', ')', '(', '$', ',', ':',
-                        '``', "''"]
-    result = 0.0
-    max_tag = listOfPossiblePP[0]
-    max_result = 0.0
-    for tag in listOfPossiblePP:
-        if len(previousTags) >= 2:
-            result = calculateMaxAccordingToTag(w, tag, previousTags[-2], previousTags[-1], q_vals_dict, e_vals_dict)
-            if result > max_result:
-                max_result = result
-                max_tag = tag
-        elif len(previousTags) == 1:
-            for possibleTag in listOfPossiblePP:
-                result = calculateMaxAccordingToTag(w, tag, previousTags[-1], possibleTag, q_vals_dict,
-                                                    e_vals_dict)
-                if result > max_result:
-                    max_result = result
+                        '``', "''", 'OTHER']
+    tags = []
+    max_value = 0.0
+    temp_res = 0.0
+    max_tag = list_of_tags[0]
+    tag_before = ''
+    two_tags_before = ''
+    splitted_line = line.split(' ')
+    for word in splitted_line:
+         for tag in list_of_tags:
+             #if it's the first two tags
+                if len(tags) > 2:
+                    tag_before = tags[-1]
+                    two_tags_before = tags[-2]
+                    resultq = MLETrain.computeQ(tag,two_tags_before, tag_before,q_vals)
+                    resulte = MLETrain.computeE(word,tag, e_vals)
+                elif len(tags) == 0:
+                    resultq = MLETrain.computeQ(tag, 'start', 'start', q_vals)
+                    resulte = MLETrain.computeE(word, tag, e_vals)
+                elif len(tags) == 1:
+                    resultq = MLETrain.computeQ(tag, 'start', tags[-1], q_vals)
+                    resulte = MLETrain.computeE(word, tag, e_vals)
+                temp_res = resulte * resultq
+                if temp_res > max_value:
+                    max_value = resulte * resultq
                     max_tag = tag
-        elif len(previousTags) == 0:
-            for i in range(0,len(listOfPossiblePP)):
-                for j in range(0, len(listOfPossiblePP)):
-                    result = calculateMaxAccordingToTag(w, tag, listOfPossiblePP[i], listOfPossiblePP[j], q_vals_dict,
-                                                        e_vals_dict)
-                    if result > max_result:
-                        max_result = result
-                        max_tag = tag
-    return max_tag
+         tags.append(max_tag)
+    return tags
 
 
 
-
-def calculateMaxAccordingToTag(w,new_t,two_before,one_before,q_vals, e_vals):
-    resultQ = findQValue(new_t,two_before,one_before, q_vals)
-    resultE = findEValue(w, new_t, e_vals)
-    return resultE * resultQ
-
-def findEValue(word, tag, e_events_tags):
-
-    result = MLETrain.computeE(word,tag,e_events_tags)
-    return result
-
-def findQValue(new_t,two_before,one_before, q_events_dict):
-    result = 0.0
-
-    result = MLETrain.computeQ(new_t,two_before,one_before, q_events_dict)
-    return result
+def calculateAccuracy(out_file_name, true_res):
+    true_res_file = open(true_res, 'r')
+    lines_true = true_res_file.read().splitlines()
+    my_res_file = open(out_file_name, 'r')
+    lines_my = my_res_file.read().splitlines()
+    count_words = 0
+    count_true = 0
+    if not(len(lines_true) == (len(lines_my)-1)):
+        print 'result files arent the same length'
+        return
+    for i in range(0, len(lines_true)):
+        splitted_line_true = lines_true[i].split(' ')
+        splitted_line_my = lines_my[i].split(' ')
+        for j in range(0, len(splitted_line_my)):
+            temp_true = splitted_line_true[j].split('/')
+            temp_my = splitted_line_my[j].split('/')
+            if temp_true[-1] == temp_my[-1]:
+                count_true += 1
+        count_words += len(splitted_line_true)
+    print 'accuracy results: ' + str((count_true/count_words)*100)
 
 
 
@@ -162,9 +110,9 @@ def preprocessForE(eEventsFileName):
 
 def main():
     print 'hello world'
-    greedyTag('/home/efrat/Documents/nlp/ass1/data/input test', 'q.mle', 'e.mle', 'output', 'extra')
-    calculateAccurecy('output', '/home/efrat/Documents/nlp/ass1/data/test result')
-    #greedyTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input', 'q.mle', 'e.mle', 'output', 'extra')
+    #greedyTag('/home/efrat/Documents/nlp/ass1/data/input test', 'q.mle', 'e.mle', 'output', 'extra')
+    #calculateAccurecy('output', '/home/efrat/Documents/nlp/ass1/data/test result')
+    greedyTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input', 'q.mle', 'e.mle', 'output', 'extra')
     #calculateAccurecy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
 if __name__ == "__main__":
         main()
