@@ -59,6 +59,8 @@ def computeQE(input_file_name, q_fileName, e_fileName):
     print 'finished calculating q'
     writeEValsToFile(e_fileName, e_dict, pp_e_dict)
     print 'finished writing e vals'
+    word_count += start_count
+    word_count+= start_count
     writeQVals(q_fileName, word_count,abc_dict, ab_dict, bc_dict, b_dict, c_dict, start_count)
     print 'finished writing q vals'
     print 'hey'

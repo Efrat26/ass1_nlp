@@ -1,5 +1,6 @@
 #Efrat Sofer, 304855125
 import MLETrain
+import time
 from itertools import izip
 def greedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_name, extra_file_name):
     #open the file
@@ -8,19 +9,34 @@ def greedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_
     output_tags = []
     words = []
     #read all lines
-    f = open(input_file_name, 'r')
-    lines = f.read().splitlines()
-    f = open(out_file_name, 'w')
+    f_input = open(input_file_name, 'r')
+    lines = f_input.read().split('\n')
+
+    f_output = open(out_file_name, 'w')
     ''' go over the lines and find the max tag for each word'''
-    for line in lines:
+    print 'len of lines is: ' + str(len(lines))
+    for j in range(0, len(lines)):
+    #for line in lines:
+        line =[]
+        line = lines[j]
         tags = findMaxTag(line,q_val_dict, e_val_dict)
         splitted_line = line.split(' ')
-        for i in range(0, len(tags)):
-            s = splitted_line[i] +"/" + tags[i]+" "
-            f.write(s)
-        f.write('\n')
-    calculateAccuracy(out_file_name, '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
-    print 'hey'
+        if j == 1700:
+            break
+            print 'h'
+        for i in range(0, len(splitted_line)):
+            if i < (len(splitted_line)-1):
+                s = splitted_line[i] + "/" + tags[i]+" "
+            else:
+                s = splitted_line[i] + "/" + tags[i]+'\n'
+
+            f_output.write(s)
+        #time.sleep(0.1)
+        #f_output.write('\n')
+
+    time.sleep(5)
+
+    #print 'hey'
 
 
 
@@ -63,12 +79,14 @@ def findMaxTag(line, q_vals, e_vals):
 
 def calculateAccuracy(out_file_name, true_res):
     true_res_file = open(true_res, 'r')
-    lines_true = true_res_file.read().splitlines()
+    lines_true = true_res_file.read().split('\n')
+    time.sleep(2)
     my_res_file = open(out_file_name, 'r')
-    lines_my = my_res_file.read().splitlines()
+    lines_my = my_res_file.read().split('\n')
+    time.sleep(2)
     count_words = 0
     count_true = 0
-    if not(len(lines_true) == (len(lines_my)-1)):
+    if not(len(lines_true) == (len(lines_my))):
         print 'result files arent the same length'
         return
     for i in range(0, len(lines_true)):
@@ -80,7 +98,9 @@ def calculateAccuracy(out_file_name, true_res):
             if temp_true[-1] == temp_my[-1]:
                 count_true += 1
         count_words += len(splitted_line_true)
-    print 'accuracy results: ' + str((count_true/count_words)*100)
+    result = 0.0
+    result = (float(count_true)/float(count_words))
+    print 'accuracy results: ' + str(result*100)
 
 
 
@@ -109,10 +129,11 @@ def preprocessForE(eEventsFileName):
 
 
 def main():
-    print 'hello world'
+    #print 'hello world'
     #greedyTag('/home/efrat/Documents/nlp/ass1/data/input test', 'q.mle', 'e.mle', 'output', 'extra')
     #calculateAccurecy('output', '/home/efrat/Documents/nlp/ass1/data/test result')
     greedyTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input', 'q.mle', 'e.mle', 'output', 'extra')
+    calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
     #calculateAccurecy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
 if __name__ == "__main__":
         main()
