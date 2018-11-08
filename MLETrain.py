@@ -117,7 +117,7 @@ def calculateQValsTriple(listOfTags, q_dict):
             a = b
             b = c
             c = listOfTags[i]
-        event = a + ' ' + ' ' + b + ' ' + c
+        event = a + ' ' + b + ' ' + c
         if event in q_dict:
             q_dict[event] += 1
         else:
@@ -175,9 +175,9 @@ def getTagFromPair(pair, sep):
 '''
 def computeQ(newTag, two_before_new, one_before, values_dict):
     #calcute the q values:
-    lambda1 = 0.15
-    lambda2 = 0.15
-    lambda3 = 0.7
+    lambda1 = 0.34
+    lambda2 = 0.33
+    lambda3 = 0.33
     qEventsFileName = 'q.mle'
     #go over the file and find the counts needed
     abc = two_before_new + ' ' + one_before + ' ' + newTag
@@ -186,16 +186,17 @@ def computeQ(newTag, two_before_new, one_before, values_dict):
     b = one_before
     c = newTag
     numOfWords = '^numOfWords'
-    events_of_interest = [abc, ab, bc, b, c ,numOfWords]
+    events_of_interest = [abc, ab, bc, b, c, numOfWords]
     for event in events_of_interest:
-        if event not in values_dict:
-            values_dict[event] = 0.0
+        if str(event) in values_dict:
+            continue
+        else:
+            values_dict[event] = 0
 
     #handle the different cases that can be
-    result = 0.0
-    p1 = 0.0
-    p2 = 0.0
-    p3 = 0.0
+    p1 = 0.00001
+    p2 = 0.00001
+    p3 = 0.00001
 
 
     if values_dict[ab] != 0:
@@ -221,16 +222,19 @@ def computeE(w, t, values_dict):
             values_dict[event] = 0
     count_t = float(values_dict[t])
     count_wt = float(values_dict[w_and_t])
+    if count_wt == 0:
+        return 0.00001
     if(count_t > 1):
         return (count_wt / count_t)
-    return 0
+    return 0.00001
 
 
 
 def main():
     #print("hello world")
     #computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")
-    computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
+    computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test", "q.mle", "e.mle")
+    #computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
     '''
     q_result = computeQ('','','',)
     print 'q result is: '+ str(q_result) + '\n'

@@ -21,7 +21,7 @@ def greedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_
         line = lines[j]
         tags = findMaxTag(line,q_val_dict, e_val_dict)
         splitted_line = line.split(' ')
-        if j == 1700:
+        if j == (len(lines)-1):
             break
         for i in range(0, len(splitted_line)):
             if i < (len(splitted_line)-1):
@@ -44,8 +44,9 @@ def greedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_
 def findMaxTag(line, q_vals, e_vals):
     list_of_tags = ['NN', 'NNS', 'NNP', 'NNPS', 'PRP', 'WP', 'VB', 'VBD', 'VBG', 'VBN', 'VBZ', 'VBP', 'MD', 'TO',
                         'JJ', 'JJR', 'JJS', 'RB', 'RBR','RBS', 'IN', 'WDT', 'DT', 'CC', 'RP', 'PRP$', 'POS', 'WRB',
-                        'CD', 'PDT', 'FW', 'EX', 'SYM', 'LS', 'PDT', 'WP$', 'UH', '#', '.', ')', '(', '$', ',', ':',
-                        '``', "''"]
+                       'CD', 'PDT', 'FW', 'EX', 'SYM', 'LS', 'PDT', 'WP$', 'UH', '#', '.', ')', '(', '$', ',', ':',
+                      '``', "''"]
+    #list_of_tags = ['A', 'B', '.']
     tags = []
     max_value = 0.0
     temp_res = 0.0
@@ -55,6 +56,8 @@ def findMaxTag(line, q_vals, e_vals):
     splitted_line = line.split(' ')
     for word in splitted_line:
          for tag in list_of_tags:
+               # if tag == 'JJ':
+                  #  print 'hey'
              #if it's the first two tags
                 if len(tags) > 2:
                     tag_before = tags[-1]
@@ -128,13 +131,31 @@ def preprocessForE(eEventsFileName):
             e_events_dict[splitted_line[0]] = float(splitted_line[1])
     return e_events_dict
 
+def testForQE():
+    q_events = preprocessForQ('q.mle')
+    e_events = preprocessForE('e.mle')
+    new_tag = 'A'
+    one_before = 'B'
+    two_before = 'A'
+    q_res = MLETrain.computeQ(new_tag, two_before, one_before, q_events)
+    print 'q result for:' + two_before + one_before + new_tag +' is: ' + str(q_res)
+    e_tag = 'B'
+    word = 'Efrat'
+    e_res = MLETrain.computeE(word, e_tag, e_events)
+    print 'e result for word:' + word + ' and tag: '+ e_tag+ ' is: ' + str(e_res)
+
 
 def main():
     #print 'hello world'
     #greedyTag('/home/efrat/Documents/nlp/ass1/data/input test', 'q.mle', 'e.mle', 'output', 'extra')
-    #calculateAccurecy('output', '/home/efrat/Documents/nlp/ass1/data/test result')
+    #calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/test result')
     greedyTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input', 'q.mle', 'e.mle', 'output', 'extra')
+    #testForQE()
+
     calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
     #calculateAccurecy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
 if __name__ == "__main__":
         main()
+
+
+
