@@ -23,7 +23,6 @@ def greedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_
         splitted_line = line.split(' ')
         if j == 1700:
             break
-            print 'h'
         for i in range(0, len(splitted_line)):
             if i < (len(splitted_line)-1):
                 s = splitted_line[i] + "/" + tags[i]+" "
@@ -46,7 +45,7 @@ def findMaxTag(line, q_vals, e_vals):
     list_of_tags = ['NN', 'NNS', 'NNP', 'NNPS', 'PRP', 'WP', 'VB', 'VBD', 'VBG', 'VBN', 'VBZ', 'VBP', 'MD', 'TO',
                         'JJ', 'JJR', 'JJS', 'RB', 'RBR','RBS', 'IN', 'WDT', 'DT', 'CC', 'RP', 'PRP$', 'POS', 'WRB',
                         'CD', 'PDT', 'FW', 'EX', 'SYM', 'LS', 'PDT', 'WP$', 'UH', '#', '.', ')', '(', '$', ',', ':',
-                        '``', "''", 'OTHER']
+                        '``', "''"]
     tags = []
     max_value = 0.0
     temp_res = 0.0
@@ -62,12 +61,14 @@ def findMaxTag(line, q_vals, e_vals):
                     two_tags_before = tags[-2]
                     resultq = MLETrain.computeQ(tag,two_tags_before, tag_before,q_vals)
                     resulte = MLETrain.computeE(word,tag, e_vals)
+
                 elif len(tags) == 0:
-                    resultq = MLETrain.computeQ(tag, 'start', 'start', q_vals)
+                    resultq = MLETrain.computeQ(tag, 'START', 'START', q_vals)
                     resulte = MLETrain.computeE(word, tag, e_vals)
                 elif len(tags) == 1:
-                    resultq = MLETrain.computeQ(tag, 'start', tags[-1], q_vals)
+                    resultq = MLETrain.computeQ(tag, 'START', tags[-1], q_vals)
                     resulte = MLETrain.computeE(word, tag, e_vals)
+
                 temp_res = resulte * resultq
                 if temp_res > max_value:
                     max_value = resulte * resultq
