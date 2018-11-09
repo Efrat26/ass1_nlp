@@ -228,8 +228,6 @@ def computeE(w, t, values_dict):
         return (count_wt / count_t)
     return  0
 
-
-
 def main():
     #print("hello world")
     computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")

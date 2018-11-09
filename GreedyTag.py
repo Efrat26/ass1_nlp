@@ -2,10 +2,11 @@
 import MLETrain
 import time
 from itertools import izip
-def greedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_name, extra_file_name):
+def GreedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_name, extra_file_name):
     #open the file
     q_val_dict = preprocessForQ(q_events_file_name)
     e_val_dict = preprocessForE(e_events_file_name)
+    list_of_tags = getTagSet(q_val_dict)
     output_tags = []
     words = []
     #read all lines
@@ -19,7 +20,7 @@ def greedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_
     #for line in lines:
         line =[]
         line = lines[j]
-        tags = findMaxTag(line,q_val_dict, e_val_dict)
+        tags = findMaxTag(line,q_val_dict, e_val_dict, list_of_tags)
         splitted_line = line.split(' ')
         if j == (len(lines)-1):
             break
@@ -30,35 +31,37 @@ def greedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_
                 s = splitted_line[i] + "/" + tags[i]+'\n'
 
             f_output.write(s)
-        #time.sleep(0.1)
-        #f_output.write('\n')
 
     time.sleep(5)
 
-    #print 'hey'
 
+def getTagSet(q_vals):
+    list_of_tags = []
+    for key in q_vals:
+        splitted_key = str(key).split('\t')
+        temp = splitted_key[0].split(' ')
+        for tag in temp:
+            if tag.startswith('^') or tag == 'START':
+                continue
+            if not list_of_tags.__contains__(tag):
+                list_of_tags.append(tag)
 
+    return list_of_tags
 
+def findMaxTag(line, q_vals, e_vals, tags_list):
 
-
-def findMaxTag(line, q_vals, e_vals):
-    list_of_tags = ['NN', 'NNS', 'NNP', 'NNPS', 'PRP', 'WP', 'VB', 'VBD', 'VBG', 'VBN', 'VBZ', 'VBP', 'MD', 'TO',
-                        'JJ', 'JJR', 'JJS', 'RB', 'RBR','RBS', 'IN', 'WDT', 'DT', 'CC', 'RP', 'PRP$', 'POS', 'WRB',
-                       'CD', 'PDT', 'FW', 'EX', 'SYM', 'LS', 'PDT', 'WP$', 'UH', '#', '.', ')', '(', '$', ',', ':',
-                      '``', "''"]
-    #list_of_tags = ['A', 'B', '.']
     tags = []
     max_value = 0.0
     temp_res = 0.0
-    max_tag = list_of_tags[0]
+    max_tag = tags_list[0]
     tag_before = ''
     two_tags_before = ''
     splitted_line = line.split(' ')
     for word in splitted_line:
         # word = word.lower()
-         max_tag = list_of_tags[0]
+         max_tag = tags_list[0]
          max_value = 0.0
-         for tag in list_of_tags:
+         for tag in tags_list:
                # if tag == 'JJ':
                   #  print 'hey'
              #if it's the first two tags
@@ -154,7 +157,7 @@ def main():
     #print 'hello world'
     #greedyTag('/home/efrat/Documents/nlp/ass1/data/input test', 'q.mle', 'e.mle', 'output', 'extra')
     #calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/test result')
-    greedyTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input', 'q.mle', 'e.mle', 'output', 'extra')
+    GreedyTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input', 'q.mle', 'e.mle', 'output', 'extra')
     #testForQE()
 
     calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
