@@ -55,11 +55,16 @@ def findMaxTag(line, q_vals, e_vals):
     two_tags_before = ''
     splitted_line = line.split(' ')
     for word in splitted_line:
+        # word = word.lower()
+         max_tag = list_of_tags[0]
+         max_value = 0.0
          for tag in list_of_tags:
                # if tag == 'JJ':
                   #  print 'hey'
              #if it's the first two tags
-                if len(tags) > 2:
+                #if word == 'House' and tag == 'NNP':
+                   # print word
+                if len(tags) >= 2:
                     tag_before = tags[-1]
                     two_tags_before = tags[-2]
                     resultq = MLETrain.computeQ(tag,two_tags_before, tag_before,q_vals)

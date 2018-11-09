@@ -194,9 +194,9 @@ def computeQ(newTag, two_before_new, one_before, values_dict):
             values_dict[event] = 0
 
     #handle the different cases that can be
-    p1 = 0.00001
-    p2 = 0.00001
-    p3 = 0.00001
+    p1 = 0.0
+    p2 = 0.0
+    p3 = 0.0
 
 
     if values_dict[ab] != 0:
@@ -213,8 +213,8 @@ in case the denominator is zero, it will return 0
 '''
 def computeE(w, t, values_dict):
     eEventsFileName = 'e.mle'
-    count_wt = 0
-    count_t = 0
+    count_wt = 0.0
+    count_t = 0.0
     w_and_t = w + ' ' + t
     events_of_interest = [w_and_t, t]
     for event in events_of_interest:
@@ -223,17 +223,17 @@ def computeE(w, t, values_dict):
     count_t = float(values_dict[t])
     count_wt = float(values_dict[w_and_t])
     if count_wt == 0:
-        return 0.00001
+        return 0
     if(count_t > 1):
         return (count_wt / count_t)
-    return 0.00001
+    return  0
 
 
 
 def main():
     #print("hello world")
-    #computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")
-    computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test", "q.mle", "e.mle")
+    computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")
+    #computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test", "q.mle", "e.mle")
     #computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
     '''
     q_result = computeQ('','','',)
