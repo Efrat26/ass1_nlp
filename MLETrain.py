@@ -1,7 +1,5 @@
 #Efrat Sofer, 304855125
 
-
-
 def computeQE(input_file_name, q_fileName, e_fileName):
     ####calculate e values
     #calculate e value, example: e(book|NN) = count(book,NN)\count(NN) and
@@ -99,10 +97,6 @@ def writeQVals(q_file_name, num_of_words, triple_dict, double_dict, single_dict,
             f.write(s + '\n')
     s = '^numOfWords' + '\t' + str(num_of_words)
     f.write(s + '\n')
-    #s = '^strat' + '\t' +  str(start_count)
-    #f.write(s + '\n')
-    #s = '^end' + '\t' + str(start_count)
-    #f.write(s + '\n')
 
 
 def calculateQValsTriple(listOfTags, q_dict):
