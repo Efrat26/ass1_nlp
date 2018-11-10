@@ -1,12 +1,13 @@
 #Efrat Sofer, 304855125
-
+STUDENT={'name': 'Efrat Sofer',
+         'ID': '304855125'}
 def computeQE(input_file_name, q_fileName, e_fileName):
     ####calculate e values
     #calculate e value, example: e(book|NN) = count(book,NN)\count(NN) and
     #calculate q values: q(c|a,b) = L1*count(a,b,c)/count(a,b) + L2*count(b,c)/count(b) + L3*count(c)/(num of words)
     e_dict = {} #for each pair (i.e in the example the numerator)
     pp_e_dict={}#for each pair (i.e in the example the denominator)
-
+    signature_dict = {}
 
     ''' read lines from file and then split it into pairs of 'word/tag' and count it for the e values
     and also count the tag appearances '''
@@ -24,6 +25,13 @@ def computeQE(input_file_name, q_fileName, e_fileName):
                 e_dict[pair] += 1
             else:
                 e_dict[pair] = 1
+            #check for signature:
+            sig = checkSignatures(pair)
+            if sig != None:
+                if sig in signature_dict:
+                    signature_dict[sig] += 1
+                else:
+                    signature_dict[sig] = 1
             t = getTagFromPair(pair, '/')
             if t is not None:
                 if t in pp_e_dict:
@@ -55,13 +63,50 @@ def computeQE(input_file_name, q_fileName, e_fileName):
     double_dict_merged = mergeDicts(ab_dict, bc_dict)
     single_dict_merged = mergeDicts(b_dict, c_dict)
     print 'finished calculating q'
-    writeEValsToFile(e_fileName, e_dict, pp_e_dict)
+    writeEValsToFile(e_fileName, e_dict, pp_e_dict, signature_dict)
     print 'finished writing e vals'
     word_count += start_count
     #word_count += start_count
     writeQVals(q_fileName, word_count,abc_dict, double_dict_merged, single_dict_merged, start_count)
     print 'finished writing q vals'
     print 'hey'
+
+
+def checkSignatures(pair):
+    splitted_pair = pair.split('/')
+    if splitted_pair[-1] == 'CD':
+        try:
+             float(splitted_pair[0])
+             return '^number CD'
+        except ValueError:
+            return None
+    if splitted_pair[-1] == 'JJ':
+        temp = splitted_pair[0].split('-')
+        if len(temp) == 2:
+            return '^hyphen JJ'
+    if splitted_pair[-1] == 'VBN':
+        if splitted_pair[0].endswith('ed'):
+            return '^_ed VBN'
+    if splitted_pair[-1] == 'VBD':
+        if splitted_pair[0].endswith('ed'):
+            return '^_ed VBD'
+
+
+    '''
+        if splitted_pair[-1] == 'NNP':
+        if splitted_pair[0][0].isupper():
+            return '^A NNP'
+    if splitted_pair[-1] == 'VBG':
+        if splitted_pair[0].endswith('ing'):
+            return '^_ing VBG'
+    if splitted_pair[-1] == 'NN':
+        if splitted_pair[0].endswith('ing'):
+            return '^_ing NN'
+    '''
+    return None
+
+
+
 
 def mergeDicts(dict_a, dict_b):
     result = {}
@@ -77,7 +122,7 @@ def mergeDicts(dict_a, dict_b):
            # result[key] = dict_b[key]
     return result
 
-def writeEValsToFile(e_file_name, e_dict_pairs, e_dict):
+def writeEValsToFile(e_file_name, e_dict_pairs, e_dict, sig_dict):
     f = open(e_file_name, 'w')
     for pair in e_dict_pairs:
         temp = pair.split('/')
@@ -86,7 +131,9 @@ def writeEValsToFile(e_file_name, e_dict_pairs, e_dict):
     for key in e_dict:
         s = key + '\t' + str(e_dict[key])
         f.write(s + '\n')
-
+    for key in sig_dict:
+        s = key + '\t' + str(sig_dict[key])
+        f.write(s + '\n')
 
 def writeQVals(q_file_name, num_of_words, triple_dict, double_dict, single_dict, start_count):
     f = open(q_file_name, 'w')
@@ -202,8 +249,56 @@ def computeQ(newTag, two_before_new, one_before, values_dict):
     return (p1+p2+p3)
 
 '''
+check for sutiable signature for the word
+w- the word
+t - the tag being checked
+values_dict - the dictionary with values
+count_t - the value of count(t)
+'''
+def checkForSig(w,t,values_dict, count_t):
+    e_val_sig = 0
+    if t == 'CD':
+        try:
+            w_temp = w.replace(',', '')
+            w_temp = w_temp.replace('.', '')
+            w_temp = w_temp.replace('-', '')
+            w_temp = w_temp.replace(':', '')
+            float(w_temp)
+            if '^number CD' in values_dict:
+                e_val_sig = (values_dict['^number CD']) / count_t
+        except ValueError:
+            e_val_sig = 0
+    elif t == 'JJ':
+        temp = w.split('-')
+        if len(temp) == 2:
+            if '^hyphen JJ' in values_dict:
+                e_val_sig =(values_dict['^hyphen JJ']) / count_t
+    elif t == 'VBN':
+        if w.endswith('ed') and '^_ed VBN' in values_dict:
+            e_val_sig = (values_dict['^_ed VBN']) / count_t
+    elif t == 'VBD':
+        if w.endswith('ed') and '^_ed VBD' in values_dict:
+            e_val_sig = (values_dict['^_ed VBD']) / count_t
+
+    '''
+        if len(w) > 0 and w[0].isupper() and t == 'NNP' and w != 'The' and w != 'That':
+        if '^A NNP' in values_dict:
+            e_val_sig = (values_dict['^A NNP']) / count_t
+    if w.endswith('ing'):
+        if t == 'NN' and '^_ing NN' in values_dict:
+            e_val_sig = (values_dict['^_ing NN']) / count_t
+        elif t == 'VBG' and '^_ing VBG' in values_dict:
+            e_val_sig = (values_dict['^_ing VBG']) / count_t
+    '''
+    return e_val_sig
+
+'''
 compute e value according to the values given in the file e.mle
 in case the denominator is zero, it will return 0
+
+w- the word
+t - the tag being checked
+values_dict - the dictionary with values
 '''
 def computeE(w, t, values_dict):
     eEventsFileName = 'e.mle'
@@ -216,6 +311,10 @@ def computeE(w, t, values_dict):
             values_dict[event] = 0
     count_t = float(values_dict[t])
     count_wt = float(values_dict[w_and_t])
+    e_val_sig = checkForSig(w,t,values_dict, count_t)
+
+    if e_val_sig != 0 and count_t > 1 and  e_val_sig > (count_wt / count_t):
+        return e_val_sig
     if count_wt == 0:
         return 0
     if(count_t > 1):

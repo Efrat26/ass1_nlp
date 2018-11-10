@@ -1,4 +1,6 @@
 #Efrat Sofer, 304855125
+STUDENT={'name': 'Efrat Sofer',
+         'ID': '304855125'}
 import MLETrain
 import time
 from itertools import izip
@@ -109,6 +111,8 @@ def calculateAccuracy(out_file_name, true_res):
             temp_my = splitted_line_my[j].split('/')
             if temp_true[-1] == temp_my[-1]:
                 count_true += 1
+            else:
+                print 'wrong tag for word: '+ temp_my[0] +' tag is: '+temp_my[1] +' and real tag is: '+ temp_true[1]
         count_words += len(splitted_line_true)
     result = 0.0
     result = (float(count_true)/float(count_words))
