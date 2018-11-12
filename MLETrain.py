@@ -13,31 +13,35 @@ def computeQE(input_file_name, q_fileName, e_fileName):
     and also count the tag appearances '''
     f = open(input_file_name, 'r')
     lines = f.read().splitlines()
-    start_count= end_count = 2*len(lines)
+    rare_words = getRareWords(lines)
+    start_count = 2*len(lines)
     pairs = []
     for line in lines:
         temp = line.split(' ')
         temp.insert(0, 'start/START')
         temp.insert(1, 'start/START')
         for pair in temp:
-            pairs.append(pair)
-            if pair in e_dict:
-                e_dict[pair] += 1
-            else:
-                e_dict[pair] = 1
-            #check for signature:
-            sig = checkSignatures(pair)
-            if sig != None:
-                if sig in signature_dict:
-                    signature_dict[sig] += 1
+            word = getWordFromPair(pair)
+            if word != 'start' and word in rare_words:
+                t = getTagFromPair(pair, '/')
+                signature = sig(word, t)
+                if signature in signature_dict:
+                    signature_dict[signature] += 1
                 else:
-                    signature_dict[sig] = 1
-            t = getTagFromPair(pair, '/')
+                    signature_dict[signature] = 1
+            else:
+                pairs.append(pair)
+                if pair in e_dict:
+                    e_dict[pair] += 1
+                else:
+                    e_dict[pair] = 1
+                t = getTagFromPair(pair, '/')
             if t is not None:
                 if t in pp_e_dict:
                     pp_e_dict[t] += 1
                 else:
                     pp_e_dict[t] = 1
+
     print 'finished calculating e'
     '''calculate the q values'''
     word_count = 0
@@ -71,40 +75,44 @@ def computeQE(input_file_name, q_fileName, e_fileName):
     print 'finished writing q vals'
     print 'hey'
 
-
-def checkSignatures(pair):
-    splitted_pair = pair.split('/')
-    if splitted_pair[-1] == 'CD':
-        try:
-             float(splitted_pair[0])
-             return '^number CD'
-        except ValueError:
-            return None
-    if splitted_pair[-1] == 'JJ':
-        temp = splitted_pair[0].split('-')
-        if len(temp) == 2:
-            return '^hyphen JJ'
-    if splitted_pair[-1] == 'VBN':
-        if splitted_pair[0].endswith('ed'):
-            return '^_ed VBN'
-    if splitted_pair[-1] == 'VBD':
-        if splitted_pair[0].endswith('ed'):
-            return '^_ed VBD'
+def getWordFromPair(pair):
+    splitted_word = pair.rpartition('/')
+    return splitted_word[0]
 
 
-    '''
-        if splitted_pair[-1] == 'NNP':
-        if splitted_pair[0][0].isupper():
-            return '^A NNP'
-    if splitted_pair[-1] == 'VBG':
-        if splitted_pair[0].endswith('ing'):
-            return '^_ing VBG'
-    if splitted_pair[-1] == 'NN':
-        if splitted_pair[0].endswith('ing'):
-            return '^_ing NN'
-    '''
-    return None
+def sig(w, t):
+    if any(c.isdigit() for c in w):
+        return '^number ' + t
+    elif w.endswith('ing'):
+        return '^_ing' + ' ' + t
+    elif w.endswith('ed'):
+        return '^_ed'+ ' ' + t
 
+    else:
+        return '^UNK' + ' ' + t
+
+
+
+
+def getRareWords(input_lines):
+    seen_words = {}
+    rare_words = {}
+    for i in range (1, len(input_lines)/2):
+        splitted_line = input_lines[i].split(' ')
+        for word in splitted_line:
+            splitted_word = word.rpartition('/')
+            word = splitted_word[0]
+            if word not in seen_words:
+                seen_words[word] = 1
+    for i in range(len(input_lines)/2 +1, len(input_lines)):
+        splitted_line = input_lines[i].split(' ')
+        for word in splitted_line:
+            splitted_word = word.rpartition('/')
+            word = splitted_word[0]
+            if word not in seen_words:
+                rare_words[word] = 1
+
+    return rare_words
 
 
 
@@ -248,49 +256,7 @@ def computeQ(newTag, two_before_new, one_before, values_dict):
         p3 = lambda3 * (values_dict[c] / values_dict[numOfWords])
     return (p1+p2+p3)
 
-'''
-check for sutiable signature for the word
-w- the word
-t - the tag being checked
-values_dict - the dictionary with values
-count_t - the value of count(t)
-'''
-def checkForSig(w,t,values_dict, count_t):
-    e_val_sig = 0
-    if t == 'CD':
-        try:
-            w_temp = w.replace(',', '')
-            w_temp = w_temp.replace('.', '')
-            w_temp = w_temp.replace('-', '')
-            w_temp = w_temp.replace(':', '')
-            float(w_temp)
-            if '^number CD' in values_dict:
-                e_val_sig = (values_dict['^number CD']) / count_t
-        except ValueError:
-            e_val_sig = 0
-    elif t == 'JJ':
-        temp = w.split('-')
-        if len(temp) == 2:
-            if '^hyphen JJ' in values_dict:
-                e_val_sig =(values_dict['^hyphen JJ']) / count_t
-    elif t == 'VBN':
-        if w.endswith('ed') and '^_ed VBN' in values_dict:
-            e_val_sig = (values_dict['^_ed VBN']) / count_t
-    elif t == 'VBD':
-        if w.endswith('ed') and '^_ed VBD' in values_dict:
-            e_val_sig = (values_dict['^_ed VBD']) / count_t
 
-    '''
-        if len(w) > 0 and w[0].isupper() and t == 'NNP' and w != 'The' and w != 'That':
-        if '^A NNP' in values_dict:
-            e_val_sig = (values_dict['^A NNP']) / count_t
-    if w.endswith('ing'):
-        if t == 'NN' and '^_ing NN' in values_dict:
-            e_val_sig = (values_dict['^_ing NN']) / count_t
-        elif t == 'VBG' and '^_ing VBG' in values_dict:
-            e_val_sig = (values_dict['^_ing VBG']) / count_t
-    '''
-    return e_val_sig
 
 '''
 compute e value according to the values given in the file e.mle
@@ -300,10 +266,11 @@ w- the word
 t - the tag being checked
 values_dict - the dictionary with values
 '''
-def computeE(w, t, values_dict):
+def computeE(w, t, values_dict, words_dict):
     eEventsFileName = 'e.mle'
     count_wt = 0.0
     count_t = 0.0
+    e_val_sig = 0
     w_and_t = w + ' ' + t
     events_of_interest = [w_and_t, t]
     for event in events_of_interest:
@@ -311,15 +278,24 @@ def computeE(w, t, values_dict):
             values_dict[event] = 0
     count_t = float(values_dict[t])
     count_wt = float(values_dict[w_and_t])
-    e_val_sig = checkForSig(w,t,values_dict, count_t)
+    wordInDict = 0
+    if w in words_dict:
+        wordInDict = 1
 
-    if e_val_sig != 0 and count_t > 1 and  e_val_sig > (count_wt / count_t):
-        return e_val_sig
-    if count_wt == 0:
+    if wordInDict == 0:
+        signature = sig(w,t)
+        if signature in values_dict:
+            count_wt = values_dict[signature]
+        else:
+            count_wt = 0
+        if count_t != 0 and count_wt != 0:
+            return (count_wt/count_t)
+        else:
+            return 0
+    if count_t == 0 or count_wt == 0:
         return 0
-    if(count_t > 1):
+    else:
         return (count_wt / count_t)
-    return  0
 
 def main():
     #print("hello world")

@@ -9,8 +9,7 @@ def GreedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_
     q_val_dict = preprocessForQ(q_events_file_name)
     e_val_dict = preprocessForE(e_events_file_name)
     list_of_tags = getTagSet(q_val_dict)
-    output_tags = []
-    words = []
+    words = wordDict(e_val_dict)
     #read all lines
     f_input = open(input_file_name, 'r')
     lines = f_input.read().split('\n')
@@ -22,7 +21,7 @@ def GreedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_
     #for line in lines:
         line =[]
         line = lines[j]
-        tags = findMaxTag(line,q_val_dict, e_val_dict, list_of_tags)
+        tags = findMaxTag(line,q_val_dict, e_val_dict, list_of_tags, words)
         splitted_line = line.split(' ')
         if j == (len(lines)-1):
             break
@@ -50,7 +49,8 @@ def getTagSet(q_vals):
 
     return list_of_tags
 
-def findMaxTag(line, q_vals, e_vals, tags_list):
+
+def findMaxTag(line, q_vals, e_vals, tags_list, words_dict):
 
     tags = []
     max_value = 0.0
@@ -64,23 +64,18 @@ def findMaxTag(line, q_vals, e_vals, tags_list):
          max_tag = tags_list[0]
          max_value = 0.0
          for tag in tags_list:
-               # if tag == 'JJ':
-                  #  print 'hey'
-             #if it's the first two tags
-                #if word == 'House' and tag == 'NNP':
-                   # print word
                 if len(tags) >= 2:
                     tag_before = tags[-1]
                     two_tags_before = tags[-2]
                     resultq = MLETrain.computeQ(tag,two_tags_before, tag_before,q_vals)
-                    resulte = MLETrain.computeE(word,tag, e_vals)
+                    resulte = MLETrain.computeE(word,tag, e_vals, words_dict)
 
                 elif len(tags) == 0:
                     resultq = MLETrain.computeQ(tag, 'START', 'START', q_vals)
-                    resulte = MLETrain.computeE(word, tag, e_vals)
+                    resulte = MLETrain.computeE(word, tag, e_vals, words_dict)
                 elif len(tags) == 1:
                     resultq = MLETrain.computeQ(tag, 'START', tags[-1], q_vals)
-                    resulte = MLETrain.computeE(word, tag, e_vals)
+                    resulte = MLETrain.computeE(word, tag, e_vals, words_dict)
 
                 temp_res = resulte * resultq
                 if temp_res > max_value:
@@ -89,6 +84,16 @@ def findMaxTag(line, q_vals, e_vals, tags_list):
          tags.append(max_tag)
     return tags
 
+
+def wordDict(e_dict):
+    result = {}
+    for key in e_dict:
+        splitted_key = key.split(' ')
+        if len(splitted_key) > 1:
+            if splitted_key[0] not in result:
+                result[splitted_key[0]] = 1
+
+    return result
 
 
 def calculateAccuracy(out_file_name, true_res):
