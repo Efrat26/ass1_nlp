@@ -87,7 +87,10 @@ def sig(w, t):
         return '^_ing' + ' ' + t
     elif w.endswith('ed'):
         return '^_ed'+ ' ' + t
-
+    elif w.__len__() > 0 and w[0].isupper():
+        return '^Aa' + ' ' + t
+    elif '-' in w:
+        return '^hasHyphen' + ' ' + t
     else:
         return '^UNK' + ' ' + t
 
@@ -223,11 +226,11 @@ def getTagFromPair(pair, sep):
     in all the denominators are zero, it will return 0
 '''
 def computeQ(newTag, two_before_new, one_before, values_dict):
+    min_return_value = 0.000000001
     #calcute the q values:
-    lambda1 = 0.34
-    lambda2 = 0.33
-    lambda3 = 0.33
-    qEventsFileName = 'q.mle'
+    lambda1 = 0.15
+    lambda2 = 0.25
+    lambda3 = 0.6
     #go over the file and find the counts needed
     abc = two_before_new + ' ' + one_before + ' ' + newTag
     ab = two_before_new + ' ' + one_before
@@ -254,6 +257,8 @@ def computeQ(newTag, two_before_new, one_before, values_dict):
         p2 = lambda2 * (values_dict[bc] / (values_dict[b]))
     if values_dict[numOfWords] != 0:
         p3 = lambda3 * (values_dict[c] / values_dict[numOfWords])
+    if p1 == p2 == p3 == 0:
+        return min_return_value
     return (p1+p2+p3)
 
 
@@ -267,10 +272,9 @@ t - the tag being checked
 values_dict - the dictionary with values
 '''
 def computeE(w, t, values_dict, words_dict):
-    eEventsFileName = 'e.mle'
+    min_return_value = 0.000000001
     count_wt = 0.0
     count_t = 0.0
-    e_val_sig = 0
     w_and_t = w + ' ' + t
     events_of_interest = [w_and_t, t]
     for event in events_of_interest:
@@ -291,9 +295,9 @@ def computeE(w, t, values_dict, words_dict):
         if count_t != 0 and count_wt != 0:
             return (count_wt/count_t)
         else:
-            return 0
+            return min_return_value
     if count_t == 0 or count_wt == 0:
-        return 0
+        return min_return_value
     else:
         return (count_wt / count_t)
 
