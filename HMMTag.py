@@ -38,11 +38,6 @@ def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_nam
         bp = numpy.zeros((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)))
         #recursion base case
         V[0, index_of_start, index_of_start] = 1
-        for r in list_of_tags_dict:
-            for t in list_of_tags_dict:
-                if V[0, list_of_tags_dict[t], list_of_tags_dict[r]] == 0:
-                    V[0, list_of_tags_dict[t], list_of_tags_dict[r]] = 0.000000001
-                V[0, list_of_tags_dict[t], list_of_tags_dict[r]] = math.log(V[0, list_of_tags_dict[t], list_of_tags_dict[r]])
         for j in range(1, len(splitted_line)):
             for tag_key_r in list_of_tags_dict:
                 for tag_key_t in list_of_tags_dict:
@@ -63,13 +58,16 @@ def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_nam
                     max_val = current
                     max_r_ind = list_of_tags_dict[r]
                     max_t_ind = list_of_tags_dict[t]
-        splitted_line.pop(0)
-        splitted_line.pop(0)
+
         result_tags = [None] * len(splitted_line)
         result_tags[len(splitted_line)-1] = max_r_ind
         result_tags[len(splitted_line)-2] = max_t_ind
         for k in range(len(splitted_line) - 3, -1, -1):
             result_tags[k] = int(bp[k+2, result_tags[k+1], result_tags[k+2]])
+        splitted_line.pop(0)
+        splitted_line.pop(0)
+        result_tags.pop(0)
+        result_tags.pop(0)
         #write the lines to output:
         for p in range(0, len(splitted_line)):
             if p < (len(splitted_line) - 1):
@@ -107,12 +105,14 @@ def findMaxTag(prev_prev_tag, new_tag, word, q_vals, e_vals, matrix, col_ind, di
             mat_val = matrix[col_ind - 1, dict_tags[tag], dict_tags[prev_prev_tag]]
             if mat_val == 0:
                 mat_val = 0.000000001
-            temp_res = (math.log(q_val) + math.log(e_val))+mat_val
+            #temp_res = (math.log(q_val) + math.log(e_val))+ mat_val
+            temp_res = q_val*e_val*mat_val
             if temp_res > max_result:
                 max_result = temp_res
                 index_prev_tag = dict_tags[tag]
         else:
             continue
+
     return [index_prev_tag, max_result]
 
 
@@ -130,6 +130,7 @@ def getPruningDict(q_vals_dict):
 
 def main():
     HMMTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input (copy)', 'q.mle', 'e.mle', 'output', 'extra')
+    print 'calculating accuracy'
     GreedyTag.calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test (copy)')
     #HMMTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input', 'q.mle', 'e.mle', 'output', 'extra')
     #GreedyTag.calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
