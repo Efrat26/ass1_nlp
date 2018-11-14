@@ -34,10 +34,15 @@ def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_nam
         splitted_line.insert(0, 'start')
         splitted_line.insert(1, 'start')
         #define the matrices
-        V = numpy.zeros((len(splitted_line), len(list_of_tags), len(list_of_tags)))
-        bp = numpy.zeros((len(splitted_line), len(list_of_tags), len(list_of_tags)))
+        V = numpy.zeros((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)))
+        bp = numpy.zeros((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)))
         #recursion base case
         V[0, index_of_start, index_of_start] = 1
+        for r in list_of_tags_dict:
+            for t in list_of_tags_dict:
+                if V[0, list_of_tags_dict[t], list_of_tags_dict[r]] == 0:
+                    V[0, list_of_tags_dict[t], list_of_tags_dict[r]] = 0.000000001
+                V[0, list_of_tags_dict[t], list_of_tags_dict[r]] = math.log(V[0, list_of_tags_dict[t], list_of_tags_dict[r]])
         for j in range(1, len(splitted_line)):
             for tag_key_r in list_of_tags_dict:
                 for tag_key_t in list_of_tags_dict:
@@ -100,12 +105,14 @@ def findMaxTag(prev_prev_tag, new_tag, word, q_vals, e_vals, matrix, col_ind, di
             q_val = MLETrain.computeQ(new_tag, prev_prev_tag, tag, q_vals)
             e_val = MLETrain.computeE(word, new_tag, e_vals, words)
             mat_val = matrix[col_ind - 1, dict_tags[tag], dict_tags[prev_prev_tag]]
-            if mat_val <= 0:
+            if mat_val == 0:
                 mat_val = 0.000000001
-            temp_res = math.log(q_val) + math.log(e_val) + math.log(mat_val)
+            temp_res = (math.log(q_val) + math.log(e_val))+mat_val
             if temp_res > max_result:
                 max_result = temp_res
                 index_prev_tag = dict_tags[tag]
+        else:
+            continue
     return [index_prev_tag, max_result]
 
 
@@ -122,10 +129,10 @@ def getPruningDict(q_vals_dict):
     return pruning
 
 def main():
-    #HMMTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input (copy)', 'q.mle', 'e.mle', 'output', 'extra')
-    #GreedyTag.calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test (copy)')
-    HMMTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input', 'q.mle', 'e.mle', 'output', 'extra')
-    GreedyTag.calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
+    HMMTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input (copy)', 'q.mle', 'e.mle', 'output', 'extra')
+    GreedyTag.calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test (copy)')
+    #HMMTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input', 'q.mle', 'e.mle', 'output', 'extra')
+    #GreedyTag.calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
 
 if __name__ == "__main__":
     main()
