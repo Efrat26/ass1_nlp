@@ -35,14 +35,18 @@ def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_nam
         splitted_line.insert(0, 'start')
         splitted_line.insert(1, 'start')
         #define the matrices
-        V = numpy.zeros((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)))
-        #V = numpy.full((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)), -numpy.inf)
+        #V = numpy.zeros((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)))
+        V = numpy.full((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)), 0.00000000000000000000000000000001)
         bp = numpy.zeros((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)))
         #recursion base case
         V[0, index_of_start, index_of_start] = 1
         for j in range(1, len(splitted_line)):
             for tag_key_r in list_of_tags_dict:
+                if splitted_line[j] in pruning_e and tag_key_r not in pruning_e[splitted_line[j]]:
+                    continue
                 for tag_key_t in list_of_tags_dict:
+                   # if j > 1 and splitted_line[j-2] in pruning_e and tag_key_t not in pruning_e[splitted_line[j-2]]:
+                      #  continue
                     [index_prev_tag, max_result] = findMaxTag(tag_key_t, tag_key_r, splitted_line[j], q_val_dict, e_val_dict,
                                                               V, j, list_of_tags_dict, pruning_dict, words)
                     V[j, list_of_tags_dict[tag_key_t], list_of_tags_dict[tag_key_r]] = max_result
@@ -70,7 +74,6 @@ def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_nam
         result_tags.pop(0)
         result_tags.pop(0)
         s = ''
-        s_temp = ''
         #write the lines to output:
         for p in range(0, len(splitted_line)):
             if p < (len(splitted_line) - 1):
@@ -106,26 +109,19 @@ def findMaxTag(prev_prev_tag, new_tag, word, q_vals, e_vals, matrix, col_ind, di
     index_prev_tag = 0
     #for t_prev_tag in list_of_tags:
     for tag in dict_tags:
-        event = prev_prev_tag + ' ' + tag + ' ' + new_tag
-        if event in pruning:
-            q_val = MLETrain.computeQ(new_tag, prev_prev_tag, tag, q_vals)
-            e_val = MLETrain.computeE(word, new_tag, e_vals, words)
-            mat_val = matrix[col_ind - 1, dict_tags[tag], dict_tags[prev_prev_tag]]
-            if mat_val == 0:
-                mat_val = 0.000000001
-            temp_res = (math.log(q_val) + math.log(e_val))+ mat_val
-            #temp_res = q_val*e_val*mat_val
-            if temp_res > max_result:
-                max_result = temp_res
-                index_prev_tag = dict_tags[tag]
-        else:
-            #print 'did not enter to event: ' + event
-            continue
-
+        #event = prev_prev_tag + ' ' + tag + ' ' + new_tag
+        #if event in pruning:
+        q_val = MLETrain.computeQ(new_tag, prev_prev_tag, tag, q_vals)
+        e_val = MLETrain.computeE(word, new_tag, e_vals, words)
+        mat_val = matrix[col_ind - 1, dict_tags[tag], dict_tags[prev_prev_tag]]
+        #print mat_val
+        temp_res = (math.log(q_val) + math.log(e_val))+ mat_val
+        if temp_res > max_result:
+            max_result = temp_res
+            index_prev_tag = dict_tags[tag]
+        #else:
+           # continue
     return [index_prev_tag, max_result]
-
-
-
 
 
 def getPruningDict(q_vals_dict):
@@ -136,10 +132,6 @@ def getPruningDict(q_vals_dict):
         if len(splitted_event) == 3:
             if key not in pruning:
                 pruning[key] = 1
-                event2 = splitted_event[0] + ' ' + splitted_event[2]
-                #if event2 not in pruning_start_end:
-                    #pruning_start_end[event2] = 1
-                #print key
     return pruning
 
 def pruningEVals(e_vals_dict):
@@ -157,12 +149,12 @@ def pruningEVals(e_vals_dict):
 
 def main():
     #'''
-    HMMTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input (copy)', 'q.mle', 'e.mle', 'output', 'extra')
+    HMMTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input (another copy)', 'q.mle', 'e.mle', 'output', 'extra')
     #print 'number of trigrams passed with pruning: ' + str(num_of_trigrams_pruning)
     #print 'number of trigrams generally: ' + str(general_num_of_trigrams)
     #print 'difference is: ' + str(general_num_of_trigrams - num_of_trigrams_pruning)
     print 'calculating accuracy'
-    GreedyTag.calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test (copy)')
+    GreedyTag.calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test (another copy)')
 
     '''
     HMMTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input', 'q.mle', 'e.mle', 'output', 'extra')
@@ -171,7 +163,7 @@ def main():
     #print 'difference is: ' + str(general_num_of_trigrams - num_of_trigrams_pruning)
     print 'calculating accuracy'
     GreedyTag.calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
-    '''
+    #'''
 
 
 if __name__ == "__main__":

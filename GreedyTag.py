@@ -13,27 +13,28 @@ def GreedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_
     #read all lines
     f_input = open(input_file_name, 'r')
     lines = f_input.read().split('\n')
-
+    output_dict={}
     f_output = open(out_file_name, 'w')
     ''' go over the lines and find the max tag for each word'''
     print 'len of lines is: ' + str(len(lines))
     for j in range(0, len(lines)):
     #for line in lines:
-        line =[]
         line = lines[j]
         tags = findMaxTag(line,q_val_dict, e_val_dict, list_of_tags, words)
         splitted_line = line.split(' ')
         if j == (len(lines)-1):
             break
+        s = ''
         for i in range(0, len(splitted_line)):
             if i < (len(splitted_line)-1):
-                s = splitted_line[i] + "/" + tags[i]+" "
+                s += splitted_line[i] + "/" + tags[i]+" "
             else:
-                s = splitted_line[i] + "/" + tags[i]+'\n'
+                s += splitted_line[i] + "/" + tags[i]+'\n'
+        output_dict[j] = s
+    for key in output_dict:
+        f_output.write(output_dict[key])
 
-            f_output.write(s)
-
-    time.sleep(5)
+    #time.sleep(5)
 
 
 def getTagSet(q_vals):
