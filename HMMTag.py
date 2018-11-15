@@ -36,14 +36,14 @@ def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_nam
         splitted_line.insert(1, 'start')
         #define the matrices
         #V = numpy.zeros((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)))
-        V = numpy.full((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)), 0.00000000000000000000000000000001)
+        V = numpy.full((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)), 0.00000001)
         bp = numpy.zeros((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)))
         #recursion base case
         V[0, index_of_start, index_of_start] = 1
         for j in range(1, len(splitted_line)):
             for tag_key_r in list_of_tags_dict:
-                if splitted_line[j] in pruning_e and tag_key_r not in pruning_e[splitted_line[j]]:
-                    continue
+                #if splitted_line[j] in pruning_e and tag_key_r not in pruning_e[splitted_line[j]]:
+                    #continue
                 for tag_key_t in list_of_tags_dict:
                    # if j > 1 and splitted_line[j-2] in pruning_e and tag_key_t not in pruning_e[splitted_line[j-2]]:
                       #  continue
@@ -115,7 +115,8 @@ def findMaxTag(prev_prev_tag, new_tag, word, q_vals, e_vals, matrix, col_ind, di
         e_val = MLETrain.computeE(word, new_tag, e_vals, words)
         mat_val = matrix[col_ind - 1, dict_tags[tag], dict_tags[prev_prev_tag]]
         #print mat_val
-        temp_res = (math.log(q_val) + math.log(e_val))+ mat_val
+        #temp_res = (math.log(q_val) + math.log(e_val))+ mat_val
+        temp_res = q_val*e_val*mat_val
         if temp_res > max_result:
             max_result = temp_res
             index_prev_tag = dict_tags[tag]
