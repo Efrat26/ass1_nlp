@@ -33,8 +33,13 @@ def ConvertFeatures(feature_file_name, feature_vec_file, feature_map_file):
                 line_features_dict[feature_as_number] += 1
             else:
                 line_features_dict[feature_as_number] = 1
+        temp_list = []
         for key in line_features_dict:
-            output_line += ' ' + key + ':' + str(line_features_dict[key])
+            temp_list.append(int(key))
+        temp_list.sort()
+        for element in temp_list:
+            output_line += ' ' + str(element) + ':' + str(line_features_dict[str(element)])
+        #sorted_line = [output_line].sort()
         log_linear_output_dict[i] = output_line
     #write to file
     written_features = set()
