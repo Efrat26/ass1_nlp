@@ -37,10 +37,14 @@ def ConvertFeatures(feature_file_name, feature_vec_file, feature_map_file):
             output_line += ' ' + key + ':' + str(line_features_dict[key])
         log_linear_output_dict[i] = output_line
     #write to file
+    written_features = set()
     print 'writing to file'
     log_linear_format_file = open(feature_vec_file, 'w')
     for key in log_linear_output_dict:
-        log_linear_format_file.write(log_linear_output_dict[key] + '\n')
+        if log_linear_output_dict[key] not in written_features:
+            log_linear_format_file.write(log_linear_output_dict[key] + '\n')
+            written_features.add(log_linear_output_dict[key])
+
 
 
 

@@ -135,7 +135,7 @@ def writeToFile(feature_file, feature_lines_dict,  feature_set, tags):
     for key in feature_lines_dict:
         features = feature_lines_dict[key]
         for feature_line in features:
-            if feature_line not in written_lines:
+            if feature_line not in written_lines and not feature_line.startswith('START'):
                 feature_lines_output_file.write(feature_line + '\n')
                 written_lines[feature_line] = 1
 
@@ -145,6 +145,8 @@ def writeToFile(feature_file, feature_lines_dict,  feature_set, tags):
             feature_map_file.write(tag + ' ' + str(counter) + '\n')
             counter += 1
     for feature in feature_set:
+        if feature.startswith('START'):
+            continue
         #feature_vec_file.write(feature + '\n')
         feature_map_file.write(feature + ' ' + str(counter) + '\n')
         counter += 1
