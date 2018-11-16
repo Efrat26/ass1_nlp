@@ -6,10 +6,6 @@ import MLETrain
 import GreedyTag
 import numpy
 import math
-
-#num_of_trigrams_pruning = 0
-#general_num_of_trigrams = 0
-
 def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_name, extra_file_name):
     #get tag set & do a preprocess on the data given
     q_val_dict = GreedyTag.preprocessForQ(q_events_file_name)
@@ -20,7 +16,7 @@ def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_nam
     list_of_tags_dict = convertListToDict(list_of_tags)
     list_of_tags_ind_is_key = convertListToDictWhereKeyIsNum(list_of_tags)
     pruning_dict = getPruningDict(q_val_dict)
-    output_dict ={}
+    output_dict = {}
     pruning_e = pruningEVals(e_val_dict)
     # read all lines
     f_input = open(input_file_name, 'r')
@@ -35,15 +31,19 @@ def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_nam
         splitted_line.insert(0, 'start')
         splitted_line.insert(1, 'start')
         #define the matrices
-        #V = numpy.zeros((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)))
-        V = numpy.full((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)), 0.00000001)
+        V = numpy.zeros((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)))
+        #V = numpy.full((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)), 0.00000001)
+        for r in list_of_tags_dict:
+            for t in list_of_tags_dict:
+                #V[0, list_of_tags_dict[t], list_of_tags_dict[r]] = 0.00000001
+                V[0, list_of_tags_dict[t], list_of_tags_dict[r]] = -1000000000000
         bp = numpy.zeros((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)))
         #recursion base case
         V[0, index_of_start, index_of_start] = 1
         for j in range(1, len(splitted_line)):
             for tag_key_r in list_of_tags_dict:
                 #if splitted_line[j] in pruning_e and tag_key_r not in pruning_e[splitted_line[j]]:
-                    #continue
+                 #   continue
                 for tag_key_t in list_of_tags_dict:
                    # if j > 1 and splitted_line[j-2] in pruning_e and tag_key_t not in pruning_e[splitted_line[j-2]]:
                       #  continue
@@ -59,6 +59,8 @@ def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_nam
         for r in list_of_tags_dict:
             for t in list_of_tags_dict:
                 current = V[j, list_of_tags_dict[t], list_of_tags_dict[r]]
+                if current == 0:
+                    continue
                 if current > max_val:
                     max_val = current
                     max_r_ind = list_of_tags_dict[r]
@@ -115,8 +117,8 @@ def findMaxTag(prev_prev_tag, new_tag, word, q_vals, e_vals, matrix, col_ind, di
         e_val = MLETrain.computeE(word, new_tag, e_vals, words)
         mat_val = matrix[col_ind - 1, dict_tags[tag], dict_tags[prev_prev_tag]]
         #print mat_val
-        #temp_res = (math.log(q_val) + math.log(e_val))+ mat_val
-        temp_res = q_val*e_val*mat_val
+        temp_res = math.log(q_val) + math.log(e_val) + mat_val
+        #temp_res = q_val*e_val*mat_val
         if temp_res > max_result:
             max_result = temp_res
             index_prev_tag = dict_tags[tag]
