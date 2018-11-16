@@ -11,6 +11,8 @@ def ExtractFeatures(input_file, feature_file_name):
     rare_words = MLETrain.getRareWords(lines)
     feature_dict = {}
     for i in range(0, len(lines)):
+        if i == len(lines)-1:
+            break
         splitted_line = lines[i].split(' ')
         splitted_line.insert(0, 'start/START')
         splitted_line.insert(1, 'start/START')
@@ -21,7 +23,7 @@ def ExtractFeatures(input_file, feature_file_name):
             splitted_word = word.rpartition('/')
             tags.append(splitted_word[-1])
             words.append(splitted_word [0])
-            if splitted_word[-1] not in tags_set and splitted_word[-1] != '':
+            if splitted_word[-1] not in tags_set:
                 tags_set.add(splitted_word[-1])
         for j in range(0, len(words)):
             event = ''
@@ -128,7 +130,7 @@ def writeToFile(feature_file, feature_lines_dict,  feature_set, tags):
     counter = 1
 
     feature_lines_output_file = open(feature_file, 'w')
-    feature_vec_file = open('feature vec file', 'w')
+    #feature_vec_file = open('feature vec file', 'w')
     feature_map_file = open('feature map file', 'w')
     for key in feature_lines_dict:
         features = feature_lines_dict[key]
@@ -138,11 +140,12 @@ def writeToFile(feature_file, feature_lines_dict,  feature_set, tags):
                 written_lines[feature_line] = 1
 
     for tag in tags:
-        feature_vec_file.write(tag+'\n')
-        feature_map_file.write(tag + ' ' + str(counter) + '\n')
-        counter += 1
+        if tag != '' and tag != 'START':
+            #feature_vec_file.write(tag+'\n')
+            feature_map_file.write(tag + ' ' + str(counter) + '\n')
+            counter += 1
     for feature in feature_set:
-        feature_vec_file.write(feature + '\n')
+        #feature_vec_file.write(feature + '\n')
         feature_map_file.write(feature + ' ' + str(counter) + '\n')
         counter += 1
 
