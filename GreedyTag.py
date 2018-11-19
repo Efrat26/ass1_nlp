@@ -1,10 +1,10 @@
-#Efrat Sofer, 304855125
-STUDENT={'name': 'Efrat Sofer',
-         'ID': '304855125'}
+#Efrat Sofer, 304855125, orain ezra 315855494
+
 import MLETrain
 import time
+import sys
 from itertools import izip
-def GreedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_name, extra_file_name):
+def GreedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_name):
     #open the file
     q_val_dict = preprocessForQ(q_events_file_name)
     e_val_dict = preprocessForE(e_events_file_name)
@@ -16,7 +16,7 @@ def GreedyTag(input_file_name, q_events_file_name, e_events_file_name, out_file_
     output_dict={}
     f_output = open(out_file_name, 'w')
     ''' go over the lines and find the max tag for each word'''
-    print 'len of lines is: ' + str(len(lines))
+    #print 'len of lines is: ' + str(len(lines))
     for j in range(0, len(lines)):
     #for line in lines:
         line = lines[j]
@@ -164,14 +164,10 @@ def testForQE():
 
 
 def main():
-    #print 'hello world'
-    #greedyTag('/home/efrat/Documents/nlp/ass1/data/input test', 'q.mle', 'e.mle', 'output', 'extra')
-    #calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/test result')
-    GreedyTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input', 'q.mle', 'e.mle', 'output', 'extra')
-    #testForQE()
-
-    calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
-    #calculateAccurecy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
+    if (len(sys.argv) != 5):
+        print 'needs 4 arguments!'
+    GreedyTag(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    #calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
 if __name__ == "__main__":
         main()
 
