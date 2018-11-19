@@ -1,7 +1,6 @@
-#Efrat Sofer, 304855125
-STUDENT={'name': 'Efrat Sofer',
-         'ID': '304855125'}
-def computeQE(input_file_name, q_fileName, e_fileName):
+import sys
+#Efrat Sofer, 304855125, orian ezra 315855494
+def MLETrain(input_file_name, q_fileName, e_fileName):
     ####calculate e values
     #calculate e value, example: e(book|NN) = count(book,NN)\count(NN) and
     #calculate q values: q(c|a,b) = L1*count(a,b,c)/count(a,b) + L2*count(b,c)/count(b) + L3*count(c)/(num of words)
@@ -42,7 +41,7 @@ def computeQE(input_file_name, q_fileName, e_fileName):
                 else:
                     pp_e_dict[t] = 1
 
-    print 'finished calculating e'
+    #print 'finished calculating e'
     '''calculate the q values'''
     word_count = 0
     abc_dict = {}
@@ -66,14 +65,14 @@ def computeQE(input_file_name, q_fileName, e_fileName):
         calculateQValsSingle(list_of_tags, c_dict)
     double_dict_merged = mergeDicts(ab_dict, bc_dict)
     single_dict_merged = mergeDicts(b_dict, c_dict)
-    print 'finished calculating q'
+    #print 'finished calculating q'
     writeEValsToFile(e_fileName, e_dict, pp_e_dict, signature_dict)
-    print 'finished writing e vals'
+    #print 'finished writing e vals'
     word_count += start_count
     #word_count += start_count
     writeQVals(q_fileName, word_count,abc_dict, double_dict_merged, single_dict_merged, start_count)
-    print 'finished writing q vals'
-    print 'hey'
+    #print 'finished writing q vals'
+   # print 'hey'
 
 def getWordFromPair(pair):
     splitted_word = pair.rpartition('/')
@@ -231,6 +230,11 @@ def computeQ(newTag, two_before_new, one_before, values_dict):
     lambda1 = 0.15
     lambda2 = 0.25
     lambda3 = 0.6
+    #lambda1 = 0.15
+    #lambda2 = 0.15
+    #lambda3 = 0.7
+
+
     #go over the file and find the counts needed
     abc = two_before_new + ' ' + one_before + ' ' + newTag
     ab = two_before_new + ' ' + one_before
@@ -302,23 +306,10 @@ def computeE(w, t, values_dict, words_dict):
         return (count_wt / count_t)
 
 def main():
-    #print("hello world")
-    computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-train", "q.mle", "e.mle")
-    #computeQE("/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test", "q.mle", "e.mle")
-    #computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
-    '''
-    q_result = computeQ('','','',)
-    print 'q result is: '+ str(q_result) + '\n'
-    e_result = computeE('stacked', 'VBN')
-    print 'e result is: ' + str(e_result) + '\n'
-   
-    '''
-    '''
-    computeQE("/home/efrat/Documents/nlp/ass1/data/test", "q.mle", "e.mle")
-    q_result = computeQ('NP', 'NNP', 'P')
-    print 'result from compute q is: ' + str(q_result)
-    e_result = computeE('this', 'DT')
-    print 'result from compute e is: ' + str(e_result)
-    '''
+    if len(sys.argv) != 4:
+        print 'needs 3 arguments'
+    MLETrain(sys.argv[1], sys.argv[2], sys.argv[3])
+
+
 if __name__ == "__main__":
-        main()
+    main()
