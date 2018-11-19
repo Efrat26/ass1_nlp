@@ -1,12 +1,11 @@
-#Efrat Sofer, 304855125
-STUDENT={'name': 'Efrat Sofer',
-         'ID': '304855125'}
+#Efrat Sofer, 304855125, orain ezra 315855494
 
+import sys
 import MLETrain
 import GreedyTag
 import numpy
 import math
-def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_name, extra_file_name):
+def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_name):
     #get tag set & do a preprocess on the data given
     q_val_dict = GreedyTag.preprocessForQ(q_events_file_name)
     e_val_dict = GreedyTag.preprocessForE(e_events_file_name)
@@ -21,6 +20,7 @@ def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_nam
     # read all lines
     f_input = open(input_file_name, 'r')
     lines = f_input.read().split('\n')
+    rareWords = MLETrain.getRareWords(lines)
     #go over all sentences
     index_of_start = list_of_tags_dict['START']
     for i in range(0, len(lines)):
@@ -31,7 +31,9 @@ def HMMTag(input_file_name, q_events_file_name, e_events_file_name, out_file_nam
         splitted_line.insert(0, 'start')
         splitted_line.insert(1, 'start')
         #define the matrices
-        V = numpy.full((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)), -999999999999999999999999999999999)
+       # V = numpy.full((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)), -999999999999999999999999999999999)
+        V = numpy.full((len(splitted_line) + 1, len(list_of_tags), len(list_of_tags)),
+                       numpy.NINF)
         bp = numpy.zeros((len(splitted_line)+1, len(list_of_tags), len(list_of_tags)))
         #recursion base case
         V[0, index_of_start, index_of_start] = 1
@@ -143,22 +145,9 @@ def pruningEVals(e_vals_dict):
     return result
 
 def main():
-    '''
-    HMMTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input (another copy)', 'q.mle', 'e.mle', 'output', 'extra')
-    #print 'number of trigrams passed with pruning: ' + str(num_of_trigrams_pruning)
-    #print 'number of trigrams generally: ' + str(general_num_of_trigrams)
-    #print 'difference is: ' + str(general_num_of_trigrams - num_of_trigrams_pruning)
-    print 'calculating accuracy'
-    GreedyTag.calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test (another copy)')
-    '''
-    HMMTag('/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test-input', 'q.mle', 'e.mle', 'output', 'extra')
-    #print 'number of trigrams passed with pruning: ' + str(num_of_trigrams_pruning)
-    #print 'number of trigrams generally: ' + str(general_num_of_trigrams)
-    #print 'difference is: ' + str(general_num_of_trigrams - num_of_trigrams_pruning)
-    print 'calculating accuracy'
-    GreedyTag.calculateAccuracy('output', '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
-    #'''
-
-
+    if len(sys.argv) != 5:
+        print 'program needs 4 arguments!'
+    HMMTag(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    GreedyTag.calculateAccuracy(sys.argv[4], '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
 if __name__ == "__main__":
     main()
