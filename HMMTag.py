@@ -148,6 +148,6 @@ def main():
     if len(sys.argv) != 5:
         print 'program needs 4 arguments!'
     HMMTag(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
-    GreedyTag.calculateAccuracy(sys.argv[4], '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
+    #GreedyTag.calculateAccuracy(sys.argv[4], '/home/efrat/Documents/nlp/ass1/data/ass1-tagger-test')
 if __name__ == "__main__":
     main()
